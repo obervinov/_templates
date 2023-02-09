@@ -1,7 +1,7 @@
 # Testing
 name: Pylint
 
-on: [push]
+on: [workflow_call]
 
 jobs:
   build:
