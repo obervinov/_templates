@@ -9,6 +9,8 @@ jobs:
     - name: version
       run: echo "::set-output name=version::$(grep "version =" pyproject.toml | awk '{printf $3}' | sed 's/"//g')"
       id: version
+    - name:
+      run: ls -lah
     - name: release
       uses: actions/create-release@v1
       id: create_release
