@@ -19,7 +19,8 @@ jobs:
         draft: false
         prerelease: false
         release_name: ${{ steps.branch.outputs.branch }}
-        tag_name: ${{ steps.version.outputs.version }}
+        tag_name: test-actions
+        #tag_name: ${{ steps.version.outputs.version }}
         body_path: CHANGELOG.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
