@@ -5,9 +5,6 @@ on: [workflow_call]
 jobs:
   create-release:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10"]
     steps:
     - name: version
       run: echo "::set-output name=version::$(grep "version =" pyproject.toml | awk '{printf $3}' | sed 's/"//g')"
