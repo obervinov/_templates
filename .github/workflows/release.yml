@@ -10,18 +10,17 @@ jobs:
     - name: Extract module version
       run: echo "::set-output name=version::$(grep "version =" pyproject.toml | awk '{printf $3}' | sed 's/"//g')"
       id: version
-    - name: Extract branch name
-      run: echo "::set-output name=branch::$(echo ${GITHUB_REF#refs/heads/})"
-      id: branch
+    - name: Project name
+      run: echo "::set-output name=project::$(echo ${GITHUB_REPOSITORY#obervinov/})"
+      id: project
     - name: Create release
       uses: actions/create-release@v1
       id: create_release
       with:
         draft: false
         prerelease: false
-        release_name: ${{ steps.branch.outputs.branch }}
-        tag_name: test-actions
-        #tag_name: ${{ steps.version.outputs.version }}
+        release_name: ${{ steps.project.outputs.project }}:${{ steps.version.outputs.version }}
+        tag_name: ${{ steps.version.outputs.version }}
         body_path: CHANGELOG.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
