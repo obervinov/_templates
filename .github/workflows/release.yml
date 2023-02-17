@@ -8,18 +8,16 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Extract module version
-      run: echo "::set-output name=version::$(grep "version =" pyproject.toml | awk '{printf $3}' | sed 's/"//g')"
-      id: version
+      run: echo "version=$(grep "version =" pyproject.toml | awk '{printf $3}' | sed 's/"//g')" >> $GITHUB_MODULE_VERSION
     - name: Project name
-      run: echo "::set-output name=project::$(echo ${GITHUB_REPOSITORY#obervinov/})"
-      id: project
+      run: echo "project=$(echo ${GITHUB_REPOSITORY#obervinov/})" >> $GITHUB_PROJECT_NAME
     - name: Create release
       uses: actions/create-release@v1
       id: create_release
       with:
         draft: false
         prerelease: false
-        release_name: ${{ steps.project.outputs.project }}:${{ steps.version.outputs.version }}
+        release_name: ${{ GITHUB_PROJECT_NAME }}:v${{ GITHUB_MODULE_VERSION }}
         tag_name: v${{ steps.version.outputs.version }}
         body_path: CHANGELOG.md
       env:
