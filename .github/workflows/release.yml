@@ -14,7 +14,7 @@ jobs:
       run: echo "project=$(echo ${GITHUB_REPOSITORY#obervinov/})" >> $GITHUB_OUTPUT
       id: project
     - name: Create release
-      uses: actions/create-release@v1
+      uses: actions/create-release@v1.1.4
       id: create_release
       with:
         draft: false
