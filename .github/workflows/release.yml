@@ -13,6 +13,9 @@ jobs:
     - name: Project name
       run: echo "project=$(echo ${GITHUB_REPOSITORY#obervinov/})" >> $GITHUB_OUTPUT
       id: project
+    - name: Changes body
+      run: echo "changes=$(sed -n '/## v1.1.0 /,/## v/p' CHANGELOG.md | sed '$ d'})" >> $GITHUB_OUTPUT
+      id: changes
     - name: Create release
       uses: actions/create-release@v1.1.4
       id: create_release
@@ -21,6 +24,7 @@ jobs:
         prerelease: false
         release_name: ${{ steps.project.outputs.project }}:${{ steps.version.outputs.version }}
         tag_name: ${{ steps.version.outputs.version }}
-        body_path: CHANGELOG.md
+        body: |
+          ${{ steps.changes.outputs.changes }}
       env:
         GITHUB_TOKEN: ${{ github.token }}
