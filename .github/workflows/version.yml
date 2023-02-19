@@ -24,18 +24,18 @@ jobs:
           echo "The Git tag already matches the versions specified in setup.py\nPlease check the version in those file and increase it according to your update"
           echo "::endgroup::"
           exit 1
-      if: ${{ steps.setuppy.outputs.version != steps.tag.outputs.tag }}
+      if: ${{ steps.setuppy.outputs.version == steps.tag.outputs.tag }}
     - name: Compare versions for pyproject.toml
       run: |
           echo "::group::Compare versions"
           echo "The Git tag already matches the versions specified in pyproject.toml\nPlease check the version in those file and increase it according to your update"
           echo "::endgroup::"
           exit 1
-      if: ${{ steps.pyprojecttoml.outputs.version != steps.tag.outputs.tag }}
+      if: ${{ steps.pyprojecttoml.outputs.version == steps.tag.outputs.tag }}
     - name: Compare versions for changelog.md
       run: |
           echo "::group::Compare versions"
           echo "The Git tag already matches the versions specified in changelog.md\nPlease check the version in those file and increase it according to your update"
           echo "::endgroup::"
           exit 1
-      if: ${{ steps.changelogmd.outputs.version != steps.tag.outputs.tag }}
+      if: ${{ steps.changelogmd.outputs.version == steps.tag.outputs.tag }}
