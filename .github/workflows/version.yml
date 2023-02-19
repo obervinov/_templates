@@ -1,4 +1,4 @@
-name: Compare version
+name: Comparing package version
 
 on: [workflow_call]
 
