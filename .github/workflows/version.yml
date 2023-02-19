@@ -1,9 +1,10 @@
-name: Comparing package version template
+name: Package version
+ template
 
 on: [workflow_call]
 
 jobs:
-  compare-package-versions-template:
+  package-version-template:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3

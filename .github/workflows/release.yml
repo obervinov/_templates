@@ -1,9 +1,9 @@
-name: Create new release template
+name: Release template
 
 on: [workflow_call]
 
 jobs:
-  create-new-release-template:
+  release-template:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
