@@ -1,9 +1,9 @@
-name: Python package template
+name: Flake8 template
 
 on: [workflow_call]
 
 jobs:
-  pypackage-template:
+  flake8-template:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

@@ -1,0 +1,42 @@
+name: Package version
+ template
+
+on: [workflow_call]
+
+jobs:
+  package-version-template:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check version in setup.py
+      run: echo "version=$(grep version='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g')" >> $GITHUB_OUTPUT
+      id: setuppy
+    - name: Check version in pyproject.toml
+      run: echo "version=$(grep 'version = ".*"' pyproject.toml| awk '{print $3}' | sed 's/"//g')" >> $GITHUB_OUTPUT
+      id: pyprojecttoml
+    - name: Check version in CHANGELOG.md
+      run: echo "version=$(grep "## v1.1.0" CHANGELOG.md)" >> $GITHUB_OUTPUT
+      id: changelogmd
+    - uses: actions-ecosystem/action-get-latest-tag@v1
+      id: tag
+    - name: Old package version in setup.py
+      run: |
+          echo "::group::Compare versions"
+          echo "The Git tag already matches the versions specified in setup.py\nPlease check the version in those file and increase it according to your update"
+          echo "::endgroup::"
+          exit 1
+      if: ${{ steps.setuppy.outputs.version == steps.tag.outputs.tag }}
+    - name: Old package version in pyproject.toml
+      run: |
+          echo "::group::Compare versions"
+          echo "The Git tag already matches the versions specified in pyproject.toml\nPlease check the version in those file and increase it according to your update"
+          echo "::endgroup::"
+          exit 1
+      if: ${{ steps.pyprojecttoml.outputs.version == steps.tag.outputs.tag }}
+    - name: Old package version in changelog.md
+      run: |
+          echo "::group::Compare versions"
+          echo "The Git tag already matches the versions specified in changelog.md\nPlease check the version in those file and increase it according to your update"
+          echo "::endgroup::"
+          exit 1
+      if: ${{ steps.changelogmd.outputs.version == steps.tag.outputs.tag }}
