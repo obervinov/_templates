@@ -9,13 +9,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Check version in setup.py
-      run: echo "version=$(grep version='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g')" >> $GITHUB_OUTPUT
+      run: echo "version=v$(grep version='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g')" >> $GITHUB_OUTPUT
       id: setuppy
     - name: Check version in pyproject.toml
-      run: echo "version=$(grep 'version = ".*"' pyproject.toml| awk '{print $3}' | sed 's/"//g')" >> $GITHUB_OUTPUT
+      run: echo "version=v$(grep 'version = ".*"' pyproject.toml| awk '{print $3}' | sed 's/"//g')" >> $GITHUB_OUTPUT
       id: pyprojecttoml
     - name: Check version in CHANGELOG.md
-      run: echo "version=$(grep "## v1.1.0" CHANGELOG.md)" >> $GITHUB_OUTPUT
+      run: echo "version=$(grep -E "## v\d" CHANGELOG.md | head -1 | awk '{print $2}')" >> $GITHUB_OUTPUT
       id: changelogmd
     - uses: actions-ecosystem/action-get-latest-tag@v1
       id: tag
