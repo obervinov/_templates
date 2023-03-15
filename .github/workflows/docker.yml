@@ -19,6 +19,7 @@ jobs:
       - name: Build an image from Dockerfile
         run: |
           docker build -t ghcr.io/obervinov/${GITHUB_REPOSITORY#obervinov/}:${{ github.sha }} --build-arg PROJECT_NAME=${GITHUB_REPOSITORY#obervinov/} .
+          docker push ghcr.io/obervinov/${GITHUB_REPOSITORY#obervinov/}:${{ github.sha }}
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
         with:
