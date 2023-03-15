@@ -1,6 +1,6 @@
 name: Pytest template
 
-on: [push]
+on: [workflow_call]
 
 jobs:
   pytest-template:
