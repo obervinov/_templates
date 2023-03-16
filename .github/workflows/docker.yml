@@ -2,9 +2,6 @@ name: Docker template
 
 on: [workflow_call]
 
-permissions:
-  contents: write
-
 jobs:
   docker-template:
     permissions:
@@ -33,4 +30,5 @@ jobs:
           sarif_file: 'trivy-results.sarif'
       - name: Push docker image to ghcr
         run: |
+          docker login --username ${{ github.actor }} --password ${{ github.token }} ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#obervinov/}
           docker push ghcr.io/obervinov/${GITHUB_REPOSITORY#obervinov/}:${{ github.sha }}
