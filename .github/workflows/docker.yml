@@ -18,12 +18,11 @@ jobs:
         uses: actions/checkout@v3
       - name: Build an image from Dockerfile
         run: |
-          docker build -t ghcr.io/obervinov/${GITHUB_REPOSITORY#obervinov/}:${{ github.sha }} --build-arg PROJECT_NAME=${GITHUB_REPOSITORY#obervinov/} .
-          docker push ghcr.io/obervinov/${GITHUB_REPOSITORY#obervinov/}:${{ github.sha }}
+          docker build -t ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#obervinov/}:${{ github.sha }} --build-arg PROJECT_NAME=${GITHUB_REPOSITORY#obervinov/} .
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
         with:
-          image-ref: 'ghcr.io/obervinov/${GITHUB_REPOSITORY#obervinov/}:${{ github.sha }}'
+          image-ref: 'ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#obervinov/}:${{ github.sha }}'
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
@@ -32,3 +31,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
+      - name: Push docker image to ghcr
+        run: |
+          docker login --username ${{ github.actor }} --password ${{ github.token }} ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#obervinov/}
+          docker push ghcr.io/obervinov/${GITHUB_REPOSITORY#obervinov/}:${{ github.sha }}
