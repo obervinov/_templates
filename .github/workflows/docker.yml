@@ -4,13 +4,13 @@ on: [workflow_call]
 
 jobs:
   docker-template:
-  permissions:
-    actions: write
-    checks: read
-    contents: write
-    packages: write
-    security-events: write
-  name: Build
+    permissions:
+      actions: write
+      checks: read
+      contents: write
+      packages: write
+      security-events: write
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
