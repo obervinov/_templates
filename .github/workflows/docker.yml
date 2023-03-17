@@ -10,7 +10,7 @@ jobs:
     contents: write
     packages: write
     security-events: write
-    name: Build
+  name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
