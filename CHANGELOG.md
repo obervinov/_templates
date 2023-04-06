@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## v1.1.0 - 2023-04-06
 ### What's Changed
-**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.2...v1.1.0
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.2...v1.1.0 by @obervinov in https://github.com/obervinov/_templates/pull/8
 #### 🚀 Features
 * enabled a local `GitHub Action` to automatically create releases
 * added a `.md` files for the correct design of the repository (`CHANGELOG.md`, `ISSUE_TEMPLATE`, `CODEOWNERS`, `pull_request_template.md` and `SECURITY.md`)
