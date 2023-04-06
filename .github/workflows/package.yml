@@ -1,0 +1,29 @@
+name: Test pypackage template
+
+on: [workflow_call]
+
+jobs:
+  test-pypackage-template:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Extract version from setup.py
+        run: echo "version=v$(grep version='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g')" >> $GITHUB_OUTPUT
+        id: version
+      - name: Extract name from setup.py
+        run: echo "name=$(grep name='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g')" >> $GITHUB_OUTPUT
+        id: name
+      - name: Extract url from setup.py
+        run: echo "url=git+$(grep url='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g').git@${{ steps.version.outputs.version }}#egg=${{ steps.name.outputs.name }}" >> $GITHUB_OUTPUT
+        id: url
+      - name: Test install pypackage
+        run: |
+          python -m pip install --upgrade pip
+          pip install ${{ steps.url.outputs.url }}

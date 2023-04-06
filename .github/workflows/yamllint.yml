@@ -1,0 +1,13 @@
+name: Yaml lint template
+
+on: [workflow_call]
+
+jobs:
+  yamllint-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: yaml-lint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .github/workflows/**.yaml
