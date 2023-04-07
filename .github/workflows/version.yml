@@ -53,7 +53,7 @@ jobs:
       run: |
           echo "::group::Compare date"
           echo "The release version to create and the release version in the file CHANGELOG.md they differ"
-          echo "Current: $(date +'%Y-%m-%d'), CHANGELOG.md: $(${{ steps.changelogmddate.outputs.date }})"
+          echo "Current: $(date +'%Y-%m-%d'), CHANGELOG.md: ${steps.changelogmddate.outputs.date}"
           echo "Please update the version CHANGELOG.md"
           echo "::endgroup::"
           exit 1
