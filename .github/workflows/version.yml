@@ -16,10 +16,10 @@ jobs:
       id: pyprojecttoml
     - name: Check version in CHANGELOG.md
       run: echo "version=$(grep -E "## v\d" CHANGELOG.md | head -1 | awk '{print $2}')" >> $GITHUB_OUTPUT
-      id: changelogmd
+      id: changelogmdversion
     - name: Check date in CHANGELOG.md
       run: echo "date=$(grep -E "## v\d" CHANGELOG.md | head -1 | awk '{print $4}')" >> $GITHUB_OUTPUT
-      id: changelogmd
+      id: changelogmddate
     - name: Check current date
       run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
       id: currentdate
@@ -45,11 +45,11 @@ jobs:
           echo "The Git tag already matches the versions specified in changelog.md\nPlease check the version in those file and increase it according to your update"
           echo "::endgroup::"
           exit 1
-      if: ${{ steps.changelogmd.outputs.version == steps.tag.outputs.tag }}
+      if: ${{ steps.changelogmdversion.outputs.version == steps.tag.outputs.tag }}
     - name: Old release date in changelog.md
       run: |
           echo "::group::Compare date"
           echo "The release version to create and the release version in the file CHANGELOG.md they differ.\nPlease update the version CHANGELOG.md"
           echo "::endgroup::"
           exit 1
-      if: ${{ steps.changelogmd.outputs.date == steps.currentdate.outputs.dat }}
+      if: ${{ steps.changelogmddate.outputs.date == steps.currentdate.outputs.dat }}
