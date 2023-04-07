@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Extract version from setup.py
-        run: echo "version=v$(grep version='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g')" >> $GITHUB_OUTPUT
+        run: echo "version=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
         id: version
       - name: Extract name from setup.py
         run: echo "name=$(grep name='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g')" >> $GITHUB_OUTPUT
