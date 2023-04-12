@@ -15,10 +15,10 @@ jobs:
       run: echo "version=v$(grep 'version = ".*"' pyproject.toml| awk '{print $3}' | sed 's/"//g')" >> $GITHUB_OUTPUT
       id: pyprojecttoml
     - name: Check version in CHANGELOG.md
-      run: echo "version=$(grep -E "## v\d" CHANGELOG.md | head -1 | awk '{print $2}')" >> $GITHUB_OUTPUT
+      run: echo "version=$(grep -E '## v\d' CHANGELOG.md | head -1 | grep -Eo 'v\d.\d.\d' )" >> $GITHUB_OUTPUT
       id: changelogmdversion
     - name: Check date in CHANGELOG.md
-      run: echo "date=$(grep -E '## v\d' CHANGELOG.md | head -1 | awk '{print $4}')" >> $GITHUB_OUTPUT
+      run: echo "date=$(grep -E '## v\d' CHANGELOG.md | head -1 | grep -Eo '\d\d\d\d-\d\d-\d\d')" >> $GITHUB_OUTPUT
       id: changelogmddate
     - name: Check current date
       run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
@@ -53,7 +53,7 @@ jobs:
       run: |
           echo "::group::Compare date"
           echo "The release version to create and the release version in the file CHANGELOG.md they differ."
-          echo "Current: $(date +'%Y-%m-%d'), CHANGELOG.md: $(grep -E '## v\d' CHANGELOG.md | head -1 | awk '{print $4}')"
+          echo "Current: $(date +'%Y-%m-%d'), CHANGELOG.md: ${{ steps.changelogmddate.outputs.date }}"
           echo "Please update the version CHANGELOG.md."
           echo "::endgroup::"
           exit 1
