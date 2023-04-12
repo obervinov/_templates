@@ -57,4 +57,4 @@ jobs:
           echo "Please update the version CHANGELOG.md"
           echo "::endgroup::"
           exit 1
-      if: ${{ steps.changelogmddate.outputs.date == steps.currentdate.outputs.date }}
+      if: ${{ steps.changelogmddate.outputs.date != steps.currentdate.outputs.date }}
