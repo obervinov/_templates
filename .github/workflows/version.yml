@@ -15,14 +15,10 @@ jobs:
       run: echo "version=v$(grep 'version = ".*"' pyproject.toml| awk '{print $3}' | sed 's/"//g')" >> $GITHUB_OUTPUT
       id: pyprojecttoml
     - name: Check version in CHANGELOG.md
-      run: |
-          pwd
-          ls -lah
-          cat CHANGELOG.md
-          echo "version=$(grep -E '## v\d' CHANGELOG.md | head -1 | grep -Eo 'v\d.\d.\d' )" >> $GITHUB_OUTPUT
+      run: echo "version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_OUTPUT
       id: changelogmdversion
     - name: Check date in CHANGELOG.md
-      run: echo "date=$(grep -E '## v\d' CHANGELOG.md | head -1 | grep -Eo '\d\d\d\d-\d\d-\d\d')" >> $GITHUB_OUTPUT
+      run: echo "date=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]')" >> $GITHUB_OUTPUT
       id: changelogmddate
     - name: Check current date
       run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
