@@ -17,15 +17,22 @@ This repository contains templates for creating standard python repositories
 ```bash
 .
 ├── .github
+│   ├── CODEOWNERS
+│   ├── ISSUE_TEMPLATE
+│   │   ├── bug_report.md
+│   │   ├── custom.md
+│   │   └── feature_request.md
+│   ├── pull_request_template.md
 │   └── workflows
 │       ├── .release.yml
-│       ├── docker.yml
-│       ├── flake8.yml
-│       ├── pylint.yml
-│       ├── pytest.yml
-│       ├── release.yml
-│       ├── version.yml
-│       └── yamllint.yml
+│       ├── build.docker.yml
+│       ├── create.release.yml
+│       ├── test.pylint.yml
+│       ├── test.pytest.yml
+│       ├── test.yamllint.yml
+│       ├── verify.changelog.yml
+│       └── verify.package.yml
+├── .gitignore
 ├── CHANGELOG.md
 ├── LICENSE
 ├── README.md
