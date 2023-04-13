@@ -25,10 +25,10 @@ jobs:
           pip install pylint flake8
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Analysing the code with pylint
+      - name: Analysing the code with PYLINT
         run: |
           pylint $(git ls-files '*.py')
 
-      - name: Lint with flake8
+      - name: Analysing the code with FLAKE8
         run: |
           flake8 . --count --show-source --statistics
