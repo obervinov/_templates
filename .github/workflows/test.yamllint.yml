@@ -1,6 +1,7 @@
+---
 name: Test Yamllint template
 
-on: [workflow_call]
+on: [workflow_call]  # yamllint disable-line rule:truthy
 
 jobs:
   test-yamllint-template:
@@ -14,3 +15,4 @@ jobs:
         uses: ibiqlik/action-yamllint@v3
         with:
           file_or_dir: .github/workflows/**.yaml
+          config_data: "{extends: default, rules: {line-length: disable}}"

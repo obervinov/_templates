@@ -1,6 +1,7 @@
+---
 name: Test Pylint template
 
-on: [workflow_call]
+on: [workflow_call]  # yamllint disable-line rule:truthy
 
 jobs:
   test-pylint-template:
@@ -11,23 +12,23 @@ jobs:
 
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pylint flake8
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint flake8
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    - name: Analysing the code with pylint
-      run: |
-        pylint $(git ls-files '*.py')
+      - name: Analysing the code with pylint
+        run: |
+          pylint $(git ls-files '*.py')
 
-    - name: Lint with flake8
-      run: |
-        flake8 . --count --show-source --statistics
+      - name: Lint with flake8
+        run: |
+          flake8 . --count --show-source --statistics

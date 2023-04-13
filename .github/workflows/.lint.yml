@@ -1,5 +1,5 @@
 ---
-name: Create GitHub release
+name: Yamllint workflows
 
 on:  # yamllint disable-line rule:truthy
   push:
@@ -8,4 +8,4 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   create-release:
-    uses: obervinov/_templates/.github/workflows/create.release.yml@main
+    uses: obervinov/_templates/.github/workflows/test.yamllint.yml@main

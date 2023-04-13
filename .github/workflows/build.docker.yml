@@ -1,6 +1,7 @@
+---
 name: Build docker image template
 
-on: [workflow_call]
+on: [workflow_call]  # yamllint disable-line rule:truthy
 
 jobs:
   build-docker-image-template:
