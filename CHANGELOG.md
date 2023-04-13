@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 * renamed all workflow files
 * renamed all job titles
 #### 🚀 Features
-* enabled a local `GitHub Action` to automatically create releases
+* enabled a local `GitHub Action` to automatically `create releases`
 * added a `.md` files for the correct design of the repository (`CHANGELOG.md`, `ISSUE_TEMPLATE`, `CODEOWNERS`, `pull_request_template.md` and `SECURITY.md`)
 * added a new workflow `verify.package.yml` to check the package metadata and verify that my python package is installed correctly
 * added a new workflow `test.yamllint.yml` for checking yaml files

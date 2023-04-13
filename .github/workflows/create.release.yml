@@ -1,4 +1,4 @@
-name: Create GitHub release template
+name: Create GitHub Release template
 
 on: [workflow_call]
 
