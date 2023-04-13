@@ -1,12 +1,15 @@
-name: Yaml lint template
+name: Test Yamllint template
 
 on: [workflow_call]
 
 jobs:
-  yamllint-template:
+  test-yamllint-template:
     runs-on: ubuntu-latest
+
+
     steps:
       - uses: actions/checkout@v3
+
       - name: yaml-lint
         uses: ibiqlik/action-yamllint@v3
         with:

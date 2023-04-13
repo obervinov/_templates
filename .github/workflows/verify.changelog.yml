@@ -1,0 +1,46 @@
+name: Verify CHANGELOG.md template
+
+on: [workflow_call]
+
+jobs:
+  verify-changelogmd-template:
+    runs-on: ubuntu-latest
+
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Extract version in CHANGELOG.md
+      run: echo "version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_OUTPUT
+      id: changelogmdversion
+
+    - name: Extract date in CHANGELOG.md
+      run: echo "date=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]')" >> $GITHUB_OUTPUT
+      id: changelogmddate
+
+    - name: Extract current date
+      run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      id: currentdate
+
+    - uses: actions-ecosystem/action-get-latest-tag@v1
+      id: tag
+
+    - name: Old release version in changelog.md
+      run: |
+          echo "::group::Compare versions"
+          echo "The Git tag already matches the versions specified in changelog.md"
+          echo "Last tag version: ${{ steps.tag.outputs.tag }}, CHANGELOG.md version: ${{ steps.changelogmdversion.outputs.version }}"
+          echo "Please check the version in those file and increase it according to your update"
+          echo "::endgroup::"
+          exit 1
+      if: ${{ steps.changelogmdversion.outputs.version == steps.tag.outputs.tag }}
+
+    - name: Old release date in changelog.md
+      run: |
+          echo "::group::Compare date"
+          echo "Release date to create and release date in the file CHANGELOG.md they differ."
+          echo "Current date: $(date +'%Y-%m-%d'), CHANGELOG.md date: ${{ steps.changelogmddate.outputs.date }}"
+          echo "Please update the date CHANGELOG.md."
+          echo "::endgroup::"
+          exit 1
+      if: ${{ steps.changelogmddate.outputs.date != steps.currentdate.outputs.date }}

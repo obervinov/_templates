@@ -1,0 +1,67 @@
+name: Verify package template
+
+on: [workflow_call]
+
+jobs:
+  verify-package-version-template:
+    runs-on: ubuntu-latest
+
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Extract version in setup.py
+      run: echo "version=v$(grep version='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g')" >> $GITHUB_OUTPUT
+      id: setuppy
+
+    - name: Extract version in pyproject.toml
+      run: echo "version=v$(grep 'version = ".*"' pyproject.toml| awk '{print $3}' | sed 's/"//g')" >> $GITHUB_OUTPUT
+      id: pyprojecttoml
+ 
+    - uses: actions-ecosystem/action-get-latest-tag@v1
+      id: tag
+ 
+    - name: Old package version in setup.py
+      run: |
+          echo "::group::Compare versions"
+          echo "The Git tag already matches the versions specified in setup.py"
+          echo "Please check the version in those file and increase it according to your update"
+          echo "::endgroup::"
+          exit 1
+      if: ${{ steps.setuppy.outputs.version == steps.tag.outputs.tag }}
+
+    - name: Old package version in pyproject.toml
+      run: |
+          echo "::group::Compare versions"
+          echo "The Git tag already matches the versions specified in pyproject.toml"
+          echo "Please check the version in those file and increase it according to your update"
+          echo "::endgroup::"
+          exit 1
+      if: ${{ steps.pyprojecttoml.outputs.version == steps.tag.outputs.tag }}
+
+
+
+
+  verify-package-install-template:
+    runs-on: ubuntu-latest
+
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Extract version from setup.py
+      run: echo "version=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
+      id: version
+
+    - name: Extract name from setup.py
+      run: echo "name=$(grep name='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g')" >> $GITHUB_OUTPUT
+      id: name
+
+    - name: Extract url from setup.py
+      run: echo "url=git+$(grep url='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g').git@${{ steps.version.outputs.version }}#egg=${{ steps.name.outputs.name }}" >> $GITHUB_OUTPUT
+      id: url
+
+    - name: Test install pypackage
+      run: |
+        python -m pip install --upgrade pip
+        pip install ${{ steps.url.outputs.url }}
