@@ -14,5 +14,5 @@ jobs:
       - name: yaml-lint
         uses: ibiqlik/action-yamllint@v3
         with:
-          file_or_dir: .github/workflows/**.yaml
+          file_or_dir: .github/workflows/**.yml
           config_data: "{extends: default, rules: {line-length: disable}}"
