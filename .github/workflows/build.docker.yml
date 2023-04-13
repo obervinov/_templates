@@ -1,23 +1,27 @@
-name: Docker template
+---
+name: Build docker image template
 
-on: [workflow_call]
+on: [workflow_call]  # yamllint disable-line rule:truthy
 
 jobs:
-  docker-template:
+  build-docker-image-template:
+    runs-on: ubuntu-latest
     permissions:
       actions: write
       checks: read
       contents: write
       packages: write
       security-events: write
-    name: Build
-    runs-on: ubuntu-latest
+
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
       - name: Build an image from Dockerfile
         run: |
           docker build -t ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#obervinov/}:${{ github.sha }} --build-arg PROJECT_NAME=${GITHUB_REPOSITORY#obervinov/} .
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
         with:
@@ -26,10 +30,12 @@ jobs:
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
+
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
+
       - name: Push docker image to ghcr
         run: |
           docker login --username ${{ github.actor }} --password ${{ github.token }} ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#obervinov/}

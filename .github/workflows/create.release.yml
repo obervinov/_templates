@@ -1,0 +1,36 @@
+---
+name: Create GitHub Release template
+
+on: [workflow_call]  # yamllint disable-line rule:truthy
+
+jobs:
+  create-gh-release-template:
+    runs-on: ubuntu-latest
+
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Extract module version
+        run: echo "version=v$(grep "version =" pyproject.toml | awk '{printf $3}' | sed 's/"//g')" >> $GITHUB_OUTPUT
+        id: version
+
+      - name: Project name
+        run: echo "project=$(echo ${GITHUB_REPOSITORY#obervinov/})" >> $GITHUB_OUTPUT
+        id: project
+
+      - name: Changes body
+        run: sed -n '/## ${{ steps.version.outputs.version }} /,/## v/p' CHANGELOG.md | sed '$ d' > RELEASE_BODY.tmp
+        id: changes
+
+      - name: Create release
+        uses: actions/create-release@v1.1.4
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.project.outputs.project }}:${{ steps.version.outputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
+          body_path: RELEASE_BODY.tmp
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

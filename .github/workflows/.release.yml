@@ -1,0 +1,11 @@
+---
+name: Create GitHub release
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [main]
+    paths: ['.github/workflows/**']
+
+jobs:
+  create-release:
+    uses: obervinov/_templates/.github/workflows/create.release.yml@main
