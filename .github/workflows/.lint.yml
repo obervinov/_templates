@@ -3,7 +3,6 @@ name: Yamllint workflows
 
 on:  # yamllint disable-line rule:truthy
   push:
-    branches: [main]
     paths: ['.github/workflows/**']
 
 jobs:
