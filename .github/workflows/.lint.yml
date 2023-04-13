@@ -7,4 +7,4 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   create-release:
-    uses: obervinov/_templates/.github/workflows/test.yamllint.yml@main
+    uses: obervinov/_templates/.github/workflows/test.yamllint.yml@feature/github-actions
