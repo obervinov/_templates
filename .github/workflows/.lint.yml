@@ -6,5 +6,5 @@ on:  # yamllint disable-line rule:truthy
     paths: ['.github/workflows/**']
 
 jobs:
-  create-release:
+  yamllint:
     uses: obervinov/_templates/.github/workflows/test.yamllint.yml@main
