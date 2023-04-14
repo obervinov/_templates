@@ -1,6 +1,6 @@
 # _templates
 [![Release](https://github.com/obervinov/_templates/actions/workflows/.release.yml/badge.svg)](https://github.com/obervinov/_templates/actions/workflows/.release.yml)
-[![Tests and checks](https://github.com/obervinov/_templates/actions/workflows/.lint.yml/badge.svg?branch=main&event=pull_request)](https://github.com/obervinov/_templates/actions/workflows/.lint.yml)
+[![Tests and checks](https://github.com/obervinov/_templates/actions/workflows/.lint.yml/badge.svg)](https://github.com/obervinov/_templates/actions/workflows/.lint.yml)
 
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/obervinov/_templates?style=for-the-badge)
 ![GitHub last commit](https://img.shields.io/github/last-commit/obervinov/_templates?style=for-the-badge)
@@ -24,6 +24,7 @@ This repository contains templates for creating standard python repositories
 │   │   └── feature_request.md
 │   ├── pull_request_template.md
 │   └── workflows
+│       ├── .lint.yml
 │       ├── .release.yml
 │       ├── build.docker.yml
 │       ├── create.release.yml

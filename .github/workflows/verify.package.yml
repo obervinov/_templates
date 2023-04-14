@@ -19,26 +19,30 @@ jobs:
         run: echo "version=v$(grep 'version = ".*"' pyproject.toml| awk '{print $3}' | sed 's/"//g')" >> $GITHUB_OUTPUT
         id: pyprojecttoml
 
+      - name: Extract version in CHANGELOG.md
+        run: echo "version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_OUTPUT
+        id: changelogmdversion
+
       - uses: actions-ecosystem/action-get-latest-tag@v1
         id: tag
 
-      - name: Old package version in setup.py
+      - name: Incorrect package version in setup.py
         run: |
-            echo "::group::Compare versions"
-            echo "The Git tag already matches the versions specified in setup.py"
-            echo "Please check the version in those file and increase it according to your update"
-            echo "::endgroup::"
+            echo "::error The Git tag already matches the versions specified in setup.py::Please check the version in those file and increase it according to your update."
             exit 1
         if: ${{ steps.setuppy.outputs.version == steps.tag.outputs.tag }}
 
-      - name: Old package version in pyproject.toml
+      - name: Incorrect package version in pyproject.toml
         run: |
-            echo "::group::Compare versions"
-            echo "The Git tag already matches the versions specified in pyproject.toml"
-            echo "Please check the version in those file and increase it according to your update"
-            echo "::endgroup::"
+            echo "::error The Git tag already matches the versions specified in pyproject.toml::Please check the version in those file and increase it according to your update."
             exit 1
         if: ${{ steps.pyprojecttoml.outputs.version == steps.tag.outputs.tag }}
+
+      - name: Incorrect package version
+        run: |
+            echo "::error The package version between files pyproject.toml, setup.py, changelog.md is different::Please check the version in those file and increase it according to your update."
+            exit 1
+        if: ${{ steps.pyprojecttoml.outputs.version == ssteps.setuppy.outputs.version == }}
 
 
   verify-package-install-template:
