@@ -42,7 +42,7 @@ jobs:
         run: |
             echo "::error The package version between files pyproject.toml, setup.py, changelog.md is different::Please check the version in those file and increase it according to your update."
             exit 1
-        if: ${{ steps.pyprojecttoml.outputs.version == steps.setuppy.outputs.version == }}
+        if: ${{ steps.pyprojecttoml.outputs.version == steps.setuppy.outputs.version == steps.changelogmdversion.outputs.version }}
 
 
   verify-package-install-template:
