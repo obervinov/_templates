@@ -6,8 +6,6 @@ on: [workflow_call]  # yamllint disable-line rule:truthy
 jobs:
   verify-package-version-template:
     runs-on: ubuntu-latest
-
-
     steps:
       - uses: actions/checkout@v3
 
@@ -42,13 +40,11 @@ jobs:
         run: |
             echo "::error The package version between files pyproject.toml, setup.py, changelog.md is different::Please check the version in those file and increase it according to your update."
             exit 1
-        if: ${{ steps.pyprojecttoml.outputs.version == ssteps.setuppy.outputs.version == }}
+        if: ${{ steps.pyprojecttoml.outputs.version == steps.setuppy.outputs.version == steps.changelogmdversion.outputs.version }}
 
 
   verify-package-install-template:
     runs-on: ubuntu-latest
-
-
     steps:
       - uses: actions/checkout@v3
 

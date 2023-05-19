@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.0.4 - 2023-05-19
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.3...v1.0.4 by @obervinov in https://github.com/obervinov/_templates/pull/10
+#### 🚀 Features
+* https://github.com/obervinov/_templates/issues/20
+* https://github.com/obervinov/_templates/issues/19
+#### 🐛 Bug Fixes
+* https://github.com/obervinov/_templates/issues/16
+* https://github.com/obervinov/_templates/issues/18
+#### 💥 Breaking Changes
+* changed strategy.matrix `python-version: ["3.9", "3.10"]` -> `python-version: ["3.10"]` in all workflows
+
 
 ## v1.0.3 - 2023-04-14
 ### What's Changed

@@ -6,8 +6,6 @@ on: [workflow_call]  # yamllint disable-line rule:truthy
 jobs:
   create-gh-release-template:
     runs-on: ubuntu-latest
-
-
     steps:
       - uses: actions/checkout@v3
 

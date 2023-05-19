@@ -1,15 +1,24 @@
 ---
-name: Test Pytest template
+name: Test Pytest with Vault template
 
 on: [workflow_call]  # yamllint disable-line rule:truthy
 
 jobs:
-  test-pytest-template:
+  test-pytest-with-vault-template:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.10"]
-
+    services:
+      vault:
+        image: ghcr.io/obervinov/tools/vault:v1.13.2
+        ports:
+          - 8200:8200
+        env:
+          VAULT_LOCAL_CONFIG: '{"backend": {"file": {"path": "/vault/data"}}, "default_lease_ttl": "1h", "max_lease_ttl": "720h", "listener": {"tcp": {"address": "0.0.0.0:8200", "tls_disable": "1"}}'
+          VAULT_API_ADDR: http://0.0.0.0:8200
+        options: >-
+          --cap-add=IPC_LOCK
     steps:
       - uses: actions/checkout@v3
 
