@@ -12,6 +12,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 #### 🐛 Bug Fixes
 * https://github.com/obervinov/_templates/issues/16
 * https://github.com/obervinov/_templates/issues/18
+#### 💥 Breaking Changes
+* changed strategy.matrix `python-version: ["3.9", "3.10"]` -> `python-version: ["3.10"]` in all workflows
 
 
 ## v1.0.3 - 2023-04-14
