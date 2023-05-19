@@ -6,8 +6,6 @@ on: [workflow_call]  # yamllint disable-line rule:truthy
 jobs:
   verify-package-version-template:
     runs-on: ubuntu-latest
-
-
     steps:
       - uses: actions/checkout@v3
 
@@ -47,8 +45,6 @@ jobs:
 
   verify-package-install-template:
     runs-on: ubuntu-latest
-
-
     steps:
       - uses: actions/checkout@v3
 
