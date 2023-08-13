@@ -1,0 +1,32 @@
+---
+name: Plan and Apply Terraform
+
+on: [workflow_call]  # yamllint disable-line rule:truthy
+
+env:
+  TF_CONTEXT: '.'
+  AWS_REGION: 'us-east-1'
+  AWS_ACCESS_KEY_ID: ''
+  AWS_SECRET_ACCESS_KEY: ''
+  AWS_S3_ENDPOINT: ''
+
+jobs:
+  terraform-apply-template:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Terraform init
+        run: |
+          terraform init --upgrade
+
+      - name: Terraform plan
+        run: |
+          cd ${TF_CONTEXT}
+          terraform plan -compact-warnings -detailed-exitcode
+
+      - name: Terraform apply
+        run: |
+          cd ${TF_CONTEXT}
+          terraform apply -auto-approve -compact-warnings

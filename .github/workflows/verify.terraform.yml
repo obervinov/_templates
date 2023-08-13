@@ -1,0 +1,29 @@
+---
+name: Check and Plan Terraform
+
+on: [workflow_call]  # yamllint disable-line rule:truthy
+
+env:
+  TF_CONTEXT: '.'
+
+jobs:
+  terraform-check-template:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Terraform fmt
+        run: |
+          terraform fmt -check -recursive -diff ${TF_CONTEXT}
+
+      - name: Terraform plan
+        run: |
+          cd ${TF_CONTEXT}
+          terraform plan -compact-warnings -detailed-exitcode
+
+      - name: Archive terraform plan artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-plan-json
+          path: tf-plan.json
