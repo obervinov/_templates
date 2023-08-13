@@ -20,7 +20,8 @@ jobs:
       - name: Terraform plan
         run: |
           cd ${TF_CONTEXT}
-          terraform plan -compact-warnings -detailed-exitcode
+          terraform init
+          terraform plan -compact-warnings -detailed-exitcode ${TF_EXTRA_ARGS}
 
       - name: Archive terraform plan artifacts
         uses: actions/upload-artifact@v3

@@ -5,6 +5,7 @@ on: [workflow_call]  # yamllint disable-line rule:truthy
 
 env:
   TF_CONTEXT: '.'
+  TF_EXTRA_ARGS: ''
   AWS_REGION: 'us-east-1'
   AWS_ACCESS_KEY_ID: ''
   AWS_SECRET_ACCESS_KEY: ''
@@ -24,9 +25,9 @@ jobs:
       - name: Terraform plan
         run: |
           cd ${TF_CONTEXT}
-          terraform plan -compact-warnings -detailed-exitcode
+          terraform plan -compact-warnings -detailed-exitcode ${TF_EXTRA_ARGS}
 
       - name: Terraform apply
         run: |
           cd ${TF_CONTEXT}
-          terraform apply -auto-approve -compact-warnings
+          terraform apply -auto-approve -compact-warnings ${TF_EXTRA_ARGS}
