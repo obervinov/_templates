@@ -19,7 +19,7 @@ jobs:
 
       - name: Determine tag
         id: determine_tag
-        run: echo "::set-output name=TAG::$(if [ -z \"$GITHUB_REF_NAME\" ]; then echo ${GITHUB_REF#refs/tags/}; else echo $GITHUB_REF_NAME; fi)"
+        run: echo "::set-output name=TAG::$(if [ -z \"$GITHUB_REF_NAME\" ]; then echo ${GITHUB_REF#refs/tags/}; else echo ${GITHUB_REF_NAME//\//-}; fi)"
 
       - name: Build an image from Dockerfile
         run: |

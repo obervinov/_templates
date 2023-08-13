@@ -3,6 +3,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.0.5 - 2023-08-13
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.4...v1.0.5 by @obervinov in https://github.com/obervinov/_templates/pull/1
+#### 🐛 Bug Fixes
+* 
+* 
+#### 📚 Documentation
+* 
+* 
+#### 💥 Breaking Changes
+* 
+* 
+#### 🚀 Features
+* 
+* 
+
+
+
 ## v1.0.4 - 2023-05-19
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.3...v1.0.4 by @obervinov in https://github.com/obervinov/_templates/pull/10
