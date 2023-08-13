@@ -5,6 +5,7 @@ on: [workflow_call]  # yamllint disable-line rule:truthy
 
 env:
   TF_CONTEXT: '.'
+  TF_EXTRA_ARGS: ''
 
 jobs:
   terraform-check-template:
@@ -22,9 +23,3 @@ jobs:
           cd ${TF_CONTEXT}
           terraform init
           terraform plan -compact-warnings -detailed-exitcode ${TF_EXTRA_ARGS}
-
-      - name: Archive terraform plan artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: terraform-plan-json
-          path: tf-plan.json
