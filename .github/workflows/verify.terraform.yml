@@ -16,10 +16,10 @@ jobs:
 
       - name: Terraform fmt
         run: |
-          terraform fmt -check -recursive -diff ${TF_CONTEXT}
+          terraform fmt -check -recursive -diff "$TF_CONTEXT"
 
       - name: Terraform plan
         run: |
-          cd ${TF_CONTEXT}
+          cd "$TF_CONTEXT"
           terraform init
-          terraform plan -compact-warnings -detailed-exitcode ${TF_EXTRA_ARGS}
+          terraform plan -compact-warnings -detailed-exitcode "$TF_EXTRA_ARGS"
