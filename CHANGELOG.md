@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 * 
 * 
 #### 🚀 Features
-* 
+* (Change ${{ github.sha }} to extract tag (or branch) from repository)[https://github.com/obervinov/_templates/issues/24]
 * 
 
 
