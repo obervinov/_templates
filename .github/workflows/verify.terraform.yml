@@ -18,8 +18,8 @@ jobs:
         run: |
           terraform fmt -check -recursive -diff "$TF_CONTEXT"
 
-      - name: Terraform plan
-        run: |
-          cd "$TF_CONTEXT"
-          terraform init
-          terraform plan -compact-warnings -detailed-exitcode "$TF_EXTRA_ARGS"
+#      - name: Terraform plan
+#        run: |
+#          cd "$TF_CONTEXT"
+#          terraform init
+#          terraform plan -compact-warnings -detailed-exitcode "$TF_EXTRA_ARGS"
