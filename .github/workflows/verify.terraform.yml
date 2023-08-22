@@ -3,9 +3,9 @@ name: Check and Plan Terraform
 
 on: [workflow_call]  # yamllint disable-line rule:truthy
 
-env:
-  TF_CONTEXT: '.'
-  TF_EXTRA_ARGS: ''
+# env:
+#  TF_CONTEXT: '.'
+#  TF_EXTRA_ARGS: ''
 
 jobs:
   terraform-check-template:
