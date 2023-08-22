@@ -14,7 +14,7 @@ None
 None
 #### 🚀 Features
 * (Changed ${{ github.sha }} to extract tag (or branch) from repository)[https://github.com/obervinov/_templates/issues/24]
-* (Add jobs for terraform modules)[https://github.com/obervinov/_templates/issues/21]
+* (Added jobs for terraform modules)[https://github.com/obervinov/_templates/issues/21]
 
 
 
