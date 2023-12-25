@@ -5,11 +5,8 @@ on: [workflow_call]  # yamllint disable-line rule:truthy
 
 env:
   AWS_REGION: 'us-east-1'
-#  TF_CONTEXT: '.'
-#  TF_EXTRA_ARGS: ''
-#  AWS_ACCESS_KEY_ID: ''
-#  AWS_SECRET_ACCESS_KEY: ''
-#  AWS_S3_ENDPOINT: ''
+  TF_CONTEXT: '.'
+  TF_EXTRA_ARGS: ''
 
 jobs:
   terraform-fmt-template:
