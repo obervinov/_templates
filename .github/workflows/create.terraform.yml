@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Set Context
         id: set-context
-        run: echo "::set-output name=value::${{ inputs.TF_TEMPLATE_PATH }}"
+        run: echo "::set-output name=value::${{ inputs.TF_CONTEXT }}"
 
       - uses: actions/checkout@v3
 
@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Set Context
         id: set-context
-        run: echo "::set-output name=value::${{ inputs.TF_TEMPLATE_PATH }}"
+        run: echo "::set-output name=value::${{ inputs.TF_CONTEXT }}"
 
       - uses: actions/checkout@v3
 
@@ -40,7 +40,7 @@ jobs:
     steps:
       - name: Set Context
         id: set-context
-        run: echo "::set-output name=value::${{ inputs.TF_TEMPLATE_PATH }}"
+        run: echo "::set-output name=value::${{ inputs.TF_CONTEXT }}"
 
       - uses: actions/checkout@v3
 
