@@ -5,38 +5,43 @@ on: [workflow_call]  # yamllint disable-line rule:truthy
 
 env:
   AWS_REGION: 'us-east-1'
-  TF_CONTEXT: '.'
-  TF_EXTRA_ARGS: ''
 
 jobs:
   terraform-fmt-template:
     runs-on: ubuntu-latest
-
     steps:
+      - name: Set Context
+        id: set-context
+        run: echo "::set-output name=value::${{ inputs.TF_TEMPLATE_PATH }}"
+
       - uses: actions/checkout@v3
 
       - name: Terraform fmt
         run: |
-          cd "$TF_CONTEXT"
+          cd "${{ needs.terraform-fmt-template.outputs.value }}"
           terraform fmt -recursive -check -diff
-
 
   terraform-docs-template:
     runs-on: ubuntu-latest
-
     steps:
+      - name: Set Context
+        id: set-context
+        run: echo "::set-output name=value::${{ inputs.TF_TEMPLATE_PATH }}"
+
       - uses: actions/checkout@v3
 
       - name: Terraform docs
         run: |
-          cd "$TF_CONTEXT"
+          cd "${{ needs.terraform-docs-template.outputs.value }}"
           terraform-docs markdown . > README.md
-
 
   terraform-apply-template:
     runs-on: ubuntu-latest
-
     steps:
+      - name: Set Context
+        id: set-context
+        run: echo "::set-output name=value::${{ inputs.TF_TEMPLATE_PATH }}"
+
       - uses: actions/checkout@v3
 
       - name: Terraform init
@@ -45,10 +50,10 @@ jobs:
 
       - name: Terraform plan
         run: |
-          cd "$TF_CONTEXT"
-          terraform plan -compact-warnings -detailed-exitcode ${TF_EXTRA_ARGS}
+          cd "${{ needs.terraform-apply-template.outputs.value }}"
+          terraform plan -compact-warnings -detailed-exitcode
 
       - name: Terraform apply
         run: |
-          cd "$TF_CONTEXT"
-          terraform apply -auto-approve -compact-warnings ${TF_EXTRA_ARGS}
+          cd "${{ needs.terraform-apply-template.outputs.value }}"
+          terraform apply -auto-approve -compact-warnings
