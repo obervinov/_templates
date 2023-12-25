@@ -51,9 +51,9 @@ jobs:
       - name: Terraform plan
         run: |
           cd "${{ needs.terraform-apply-template.outputs.value }}"
-          terraform plan -compact-warnings -detailed-exitcode
+          terraform plan -compact-warnings -detailed-exitcode ${TF_EXTRA_ARGS}
 
       - name: Terraform apply
         run: |
           cd "${{ needs.terraform-apply-template.outputs.value }}"
-          terraform apply -auto-approve -compact-warnings
+          terraform apply -auto-approve -compact-warnings ${TF_EXTRA_ARGS}
