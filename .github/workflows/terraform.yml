@@ -3,57 +3,53 @@ name: Plan and Apply Terraform
 
 on: [workflow_call]  # yamllint disable-line rule:truthy
 
-env:
-  AWS_REGION: 'us-east-1'
-
 jobs:
   terraform-fmt-template:
     runs-on: ubuntu-latest
     steps:
-      - name: Set Context
-        id: set-context
-        run: echo "::set-output name=value::${{ inputs.TF_CONTEXT }}"
-
       - uses: actions/checkout@v3
 
       - name: Terraform fmt
         run: |
-          cd "${{ needs.terraform-fmt-template.outputs.value }}"
+          cd $TF_WORKSPACE
           terraform fmt -recursive -check -diff
 
   terraform-docs-template:
     runs-on: ubuntu-latest
     steps:
-      - name: Set Context
-        id: set-context
-        run: echo "::set-output name=value::${{ inputs.TF_CONTEXT }}"
-
       - uses: actions/checkout@v3
 
       - name: Terraform docs
         run: |
-          cd "${{ needs.terraform-docs-template.outputs.value }}"
+          cd $TF_WORKSPACE
           terraform-docs markdown . > README.md
 
-  terraform-apply-template:
+  terraform-plan-template:
     runs-on: ubuntu-latest
     steps:
-      - name: Set Context
-        id: set-context
-        run: echo "::set-output name=value::${{ inputs.TF_CONTEXT }}"
-
       - uses: actions/checkout@v3
 
       - name: Terraform init
         run: |
+          cd $TF_WORKSPACE
           terraform init --upgrade
 
       - name: Terraform plan
         run: |
-          cd "${{ needs.terraform-apply-template.outputs.value }}"
+          cd $TF_WORKSPACE
           terraform plan -compact-warnings -detailed-exitcode ${TF_EXTRA_ARGS}
+
+  terraform-apply-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Terraform init
+        run: |
+          cd $TF_WORKSPACE
+          terraform init --upgrade
 
       - name: Terraform apply
         run: |
-          cd "${{ needs.terraform-apply-template.outputs.value }}"
+          cd $TF_WORKSPACE
           terraform apply -auto-approve -compact-warnings ${TF_EXTRA_ARGS}
