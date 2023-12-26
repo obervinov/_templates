@@ -12,6 +12,8 @@ jobs:
       - name: Terraform fmt
         run: |
           cd $TF_WORKSPACE
+          pwd
+          echo $TF_WORKSPACE
           terraform fmt -recursive -check -diff
 
   terraform-docs-template:
