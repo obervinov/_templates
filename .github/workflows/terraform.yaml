@@ -38,11 +38,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
+  
       - name: Terraform docs
         run: |
           IFS=',' read -ra DIRS <<< "${{ github.event.inputs.DOCS_DIRECTORIES }}"
           for dir in "${DIRS[@]}"; do
-            cd "$dir"
-            terraform-docs markdown . > README.md
+            terraform-docs markdown "$dir" > "$dir/README.md"
           done
+          
