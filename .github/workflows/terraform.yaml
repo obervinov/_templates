@@ -41,6 +41,7 @@ jobs:
   
       - name: Terraform docs
         run: |
+          echo  "${{ github.event.inputs.DOCS_DIRECTORIES }}"
           IFS=',' read -ra DIRS <<< "${{ github.event.inputs.DOCS_DIRECTORIES }}"
           for dir in "${DIRS[@]}"; do
             terraform-docs markdown "$dir" > "$dir/README.md"
