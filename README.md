@@ -30,6 +30,8 @@ This repository contains templates for creating standard python repositories
     │   └── feature_request.md
     ├── pull_request_template.md
     └── workflows
+        ├── .lint.yml
+        ├── .release.yml        
         ├── changelog.yml
         ├── docker.yml
         ├── pylint.yml

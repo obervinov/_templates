@@ -7,4 +7,4 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   yamllint:
-    uses: obervinov/_templates/.github/workflows/yamllint.yml@main
+    uses: obervinov/_templates/.github/workflows/yamllint.yaml@main
