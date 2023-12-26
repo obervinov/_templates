@@ -1,62 +1,32 @@
 ---
 name: Plan and Apply Terraform
 
-on: [workflow_call]  # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      TF_WORKSPACE:
+        description: 'Terraform workspace directory'
+        required: true
+        type: string
+
 
 jobs:
   terraform-fmt-template:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Terraform fmt
         run: |
-          cd ${{ inputs.TF_WORKSPACE }}
-          pwd
-          echo ${{ inputs.TF_WORKSPACE }}
-          env
+          cd ${{ github.event.inputs.TF_WORKSPACE }}
           terraform fmt -recursive -check -diff
 
   terraform-docs-template:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Terraform docs
         run: |
-          cd ${{ inputs.TF_WORKSPACE }}
+          cd ${{ github.event.inputs.TF_WORKSPACE }}
           terraform-docs markdown . > README.md
-
-  terraform-plan-template:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Terraform init
-        run: |
-          cd ${{ inputs.TF_WORKSPACE }}
-          terraform init --upgrade
-
-      - name: Terraform plan
-        run: |
-          cd ${{ inputs.TF_WORKSPACE }}
-          terraform plan -compact-warnings -detailed-exitcode ${{ inputs.TF_EXTRA_ARGS }}
-
-  terraform-apply-template:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-
-      - name: Terraform init
-        run: |
-          cd ${{ inputs.TF_WORKSPACE }}
-          terraform init --upgrade
-
-      - name: Terraform apply
-        run: |
-          cd ${{ inputs.TF_WORKSPACE }}
-          terraform apply -auto-approve -compact-warnings ${{ inputs.TF_EXTRA_ARGS }}
