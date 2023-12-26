@@ -4,11 +4,10 @@ name: Plan and Apply Terraform
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      TF_WORKSPACE:
-        description: 'Terraform workspace directory'
+      DOCS_DIRECTORIES:
+        description: 'Comma-separated list of directories for terraform-docs'
         required: true
         type: string
-
 
 jobs:
   terraform-fmt-template:
@@ -16,10 +15,24 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Terraform fmt
+      - name: Terraform format code
         run: |
-          cd ${{ github.event.inputs.TF_WORKSPACE }}
-          terraform fmt -recursive -check -diff
+          terraform fmt -recursive
+
+      - name: Check for Terraform formatting changes
+        id: terraform-fmt-check
+        run: |
+          fmt_changes=$(git diff --name-only --exit-code || echo "changes")
+          echo "::set-output name=fmt_changes::$fmt_changes"
+
+      - name: Commit changes
+        if: steps.terraform-fmt-check.outputs.fmt_changes == 'changes'
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add .
+          git commit -m "Apply Terraform formatting changes"
+          git push
 
   terraform-docs-template:
     runs-on: ubuntu-latest
@@ -28,5 +41,8 @@ jobs:
 
       - name: Terraform docs
         run: |
-          cd ${{ github.event.inputs.TF_WORKSPACE }}
-          terraform-docs markdown . > README.md
+          IFS=',' read -ra DIRS <<< "${{ github.event.inputs.DOCS_DIRECTORIES }}"
+          for dir in "${DIRS[@]}"; do
+            cd "$dir"
+            terraform-docs markdown . > README.md
+          done
