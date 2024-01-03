@@ -15,6 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Set DOCS_DIRECTORIES
+        run: echo "::set-output name=DOCS_DIRECTORIES::${{ github.event.inputs.DOCS_DIRECTORIES }}"
+
       - name: Terraform format code
         run: |
           terraform fmt -recursive
@@ -33,6 +36,13 @@ jobs:
           git add .
           git commit -m "Apply Terraform formatting changes"
           git push
+
+      - name: Upload DOCS_DIRECTORIES artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: DOCS_DIRECTORIES
+          path: DOCS_DIRECTORIES.txt
 
   terraform-docs-template:
     runs-on: ubuntu-latest
