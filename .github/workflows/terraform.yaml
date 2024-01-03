@@ -8,7 +8,10 @@ jobs:
   terraform-fmt-template:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@main
+        with:
+          persist-credentials: false
+          fetch-depth: 0
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
@@ -27,19 +30,21 @@ jobs:
           echo "::set-output name=fmt_changes::$fmt_changes"
           terraform fmt -recursive
 
-      - name: Commit changes
+      - name: Commit & Push changes
         if: steps.terraform-fmt-check.outputs.fmt_changes == 'true'
-        run: |
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git add .
-          git commit -m "Apply Terraform formatting changes"
-          git push
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          message: "Apply Terraform formatting changes by GitHub Actions: ${{ github.sha }}"
+
 
   terraform-docs-template:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@main
+        with:
+          persist-credentials: false
+          fetch-depth: 0
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
@@ -62,20 +67,14 @@ jobs:
           if [ -f "terraform-docs.txt" ]; then
             while IFS= read -r dir; do
               /usr/local/bin/terraform-docs markdown "$dir" > "$dir/README.md"
-              echo "::info::Updated $dir/README.md"
+              echo "Updated $dir/README.md"
             done < "terraform-docs.txt"
           else
             echo "::warning::terraform-docs.txt not found. Skipping the task."
           fi
-  
-      - name: Commit changes
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            git config --global user.email "actions@github.com"
-            git config --global user.name "GitHub Actions"
-            git add .
-            git commit -m "Apply Terraform formatting changes"
-            git push
-          else
-            echo "::set-output name=changes::false"
-          fi
+    
+      - name: Commit & Push changes
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          message: "Apply Terraform formatting changes by GitHub Actions: ${{ github.sha }}"
