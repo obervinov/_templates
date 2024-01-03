@@ -53,10 +53,10 @@ jobs:
 
       - name: Install Terraform docs
         run: |
-          curl -Lo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.17.0/terraform-docs-v0.17.0-$(uname)-amd64.tar.gz
-          tar -xzf terraform-docs.tar.gz
-          chmod +x terraform-docs
-          mv terraform-docs /usr/local/bin/terraform-docs
+          curl -Lo /tmp/terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.17.0/terraform-docs-v0.17.0-$(uname)-amd64.tar.gz
+          tar -xzf /tmp/terraform-docs.tar.gz
+          chmod +x /tmp/terraform-docs
+          mv /tmp/terraform-docs /usr/local/bin/terraform-docs
       
       - name: Check cli
         run: |
@@ -66,7 +66,7 @@ jobs:
         run: |
           if [ -f "terraform-docs.txt" ]; then
             while IFS= read -r dir; do
-              /usr/local/bin/terraform-docs markdown "$dir" > "$dir/README.md"
+              terraform-docs markdown "$dir" > "$dir/README.md"
               echo "Updated $dir/README.md"
             done < "terraform-docs.txt"
           else
