@@ -10,6 +10,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
       - name: Terraform format code
         id: terraform-fmt-check
         run: |
@@ -31,12 +36,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Install Terraform docs
+        run: |
+          curl -L "$(curl -s https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest | jq -r '.assets[].browser_download_url' | grep linux_amd64)" > terraform-docs
+          chmod +x terraform-docs
+          sudo mv terraform-docs /usr/local/bin/
   
       - name: Terraform docs
         run: |
           if [ -f "terraform-docs.txt" ]; then
             while IFS= read -r dir; do
-              terraform-docs markdown "$dir" > "$dir/README.md"
+              /usr/local/bin/terraform-docs markdown "$dir" > "$dir/README.md"
+              echo "::info::Updated $dir/README.md"
             done < "terraform-docs.txt"
           else
             echo "::warning::terraform-docs.txt not found. Skipping the task."
