@@ -25,13 +25,9 @@ jobs:
       - name: Terraform format code
         id: terraform-fmt-check
         run: |
-          fmt_changes=$(terraform fmt -check -recursive)
-          [ -n "$fmt_changes" ] && fmt_changes=true || fmt_changes=false
-          echo "::set-output name=fmt_changes::$fmt_changes"
           terraform fmt -recursive
 
       - name: Commit & Push changes
-        if: steps.terraform-fmt-check.outputs.fmt_changes == 'true'
         uses: actions-js/push@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
