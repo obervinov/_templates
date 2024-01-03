@@ -19,17 +19,15 @@ jobs:
         run: echo "::set-output name=DOCS_DIRECTORIES::${{ github.event.inputs.DOCS_DIRECTORIES }}"
 
       - name: Terraform format code
-        run: |
-          terraform fmt -recursive
-
-      - name: Check for Terraform formatting changes
         id: terraform-fmt-check
         run: |
-          fmt_changes=$(git diff --name-only --exit-code || echo "changes")
+          fmt_changes=$(terraform fmt -check -recursive)
+          [ -n "$fmt_changes" ] && fmt_changes=true || fmt_changes=false
           echo "::set-output name=fmt_changes::$fmt_changes"
+          terraform fmt -recursive
 
       - name: Commit changes
-        if: steps.terraform-fmt-check.outputs.fmt_changes == 'changes'
+        if: steps.terraform-fmt-check.outputs.fmt_changes == 'true'
         run: |
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
