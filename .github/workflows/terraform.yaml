@@ -15,6 +15,10 @@ jobs:
         with:
           terraform_version: 1.6.6
 
+      - name: Check cli
+        run: |
+          terraform --version
+
       - name: Terraform format code
         id: terraform-fmt-check
         run: |
@@ -44,9 +48,14 @@ jobs:
 
       - name: Install Terraform docs
         run: |
-          curl -L "$(curl -s https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest | jq -r '.assets[].browser_download_url' | grep linux_amd64)" > terraform-docs
+          curl -Lo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.17.0/terraform-docs-v0.17.0-$(uname)-amd64.tar.gz
+          tar -xzf terraform-docs.tar.gz
           chmod +x terraform-docs
-          sudo mv terraform-docs /usr/local/bin/
+          mv terraform-docs /usr/local/bin/terraform-docs
+      
+      - name: Check cli
+        run: |
+          terraform-docs --version
   
       - name: Terraform docs
         run: |
