@@ -50,7 +50,7 @@ jobs:
       - name: Install Terraform docs
         run: |
           curl -Lo /tmp/terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.17.0/terraform-docs-v0.17.0-$(uname)-amd64.tar.gz
-          tar -xzf /tmp/terraform-docs.tar.gz
+          tar -xzf /tmp/terraform-docs.tar.gz -C /tmp
           chmod +x /tmp/terraform-docs
           mv /tmp/terraform-docs /usr/local/bin/terraform-docs
       
