@@ -3,20 +3,12 @@ name: Plan and Apply Terraform
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
-    inputs:
-      DOCS_DIRECTORIES:
-        description: 'Comma-separated list of directories for terraform-docs'
-        required: true
-        type: string
 
 jobs:
   terraform-fmt-template:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set DOCS_DIRECTORIES
-        run: echo "::set-output name=DOCS_DIRECTORIES::${{ github.event.inputs.DOCS_DIRECTORIES }}"
 
       - name: Terraform format code
         id: terraform-fmt-check
