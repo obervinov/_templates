@@ -9,38 +9,41 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/obervinov/_templates?style=for-the-badge)
 
 ## <img src="https://github.com/obervinov/_templates/blob/main/icons/book.png" width="25" title="about"> About this project
-This repository contains templates for creating standard python repositories
-- github actions templates
+This repository contains templates for creating standard repositories
+- **Workflow templates for GitHub Actions**
   - docker
   - changelog
   - python
   - terraform
   - release
   - yaml
-- icons for documentation
+  - helm
+- **Icons for documentation in README.md**
 
 ## <img src="https://github.com/obervinov/_templates/blob/main/icons/stack.png" width="25" title="stack"> Repository map
 ```bash
 .
 ├── .github
-    ├── CODEOWNERS
-    ├── ISSUE_TEMPLATE
-    │   ├── bug_report.md
-    │   ├── custom.md
-    │   └── feature_request.md
-    ├── pull_request_template.md
-    └── workflows
-        ├── .lint.yml
-        ├── .release.yml        
-        ├── changelog.yml
-        ├── docker.yml
-        ├── pylint.yml
-        ├── pypackage.yml
-        ├── pytest-with-vault.yml
-        ├── pytest.yml
-        ├── release.yml
-        ├── terraform.yml
-        └── yamllint.yml
+│   ├── CODEOWNERS
+│   ├── ISSUE_TEMPLATE
+│   │   ├── bug_report.md
+│   │   ├── custom.md
+│   │   └── feature_request.md
+│   ├── pull_request_template.md
+│   └── workflows
+│       ├── .lint.yaml
+│       ├── .release.yaml
+│       ├── changelog.yaml
+│       ├── docker.yaml
+│       ├── helm.yaml
+│       ├── pylint.yaml
+│       ├── pypackage.yaml
+│       ├── pytest-with-vault.yaml
+│       ├── pytest.yaml
+│       ├── release.yaml
+│       ├── terraform.yaml
+│       └── yamllint.yaml
+├── .gitignore
 ├── CHANGELOG.md
 ├── LICENSE
 ├── README.md
