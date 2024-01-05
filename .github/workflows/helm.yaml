@@ -74,7 +74,7 @@
           - name: Build helm index
             run: |
                 printf "Building helm index.yaml\n"
-                helm repo index charts --url https://obervinov.github.io/helm-charts --merge index.yaml .
+                helm repo index charts --url https://obervinov.github.io/helm-charts --merge index.yaml
 
           - name: Check repository structure
             run: |
