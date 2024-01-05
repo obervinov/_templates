@@ -50,7 +50,7 @@
                 printf "Templating helm charts:\n"
                 for chart in ${source_charts[@]}; do
                     printf " + %s\n" "${chart}"
-                    helm template ${chart}/. -f values.yaml
+                    helm template ${chart}/. -f ${chart}/values.yaml
                 done
 
           - name: Lint helm charts
