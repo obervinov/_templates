@@ -43,7 +43,16 @@
                         helm schema-gen ${chart}/values.yaml > ${chart}/values.schema.json
                     fi
                 done
-            
+
+          - name: Template helm charts
+            run: |
+                source_charts=${{ steps.get_source_charts.outputs.source_charts }}
+                printf "Templating helm charts:\n"
+                for chart in ${source_charts[@]}; do
+                    printf " + %s\n" "${chart}"
+                    helm template ${chart}/. -f values.yaml
+                done
+
           - name: Lint helm charts
             run: |
                 source_charts=${{ steps.get_source_charts.outputs.source_charts }}
