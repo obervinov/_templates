@@ -1,0 +1,81 @@
+---
+    name: Helm charts bundle template
+    
+    on: [workflow_call]  # yamllint disable-line rule:truthy
+    
+    jobs:
+      build-helm-registry-template:
+        runs-on: ubuntu-latest
+
+        steps:
+          - uses: actions/checkout@main
+            with:
+              persist-credentials: false
+              fetch-depth: 0
+    
+          - name: Install helm and dependencies
+            run: |
+                curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+                helm plugin install https://github.com/karuppiah7890/helm-schema-gen.git
+    
+          - name: Get helm-charts list in source directory
+            id: get_source_charts
+            run: |
+                source_charts=$(ls -d src/*)
+                printf "Discovered source_charts:\n"
+                for chart in ${source_charts[@]}; do
+                    printf " + %s\n" "${chart}"
+                done
+                echo "::set-output name=source_charts::$source_charts"
+
+          - name: Generate json schema for helm charts
+            run: |
+                source_charts=${{ steps.get_source_charts.outputs.source_charts }}
+                printf "Creating json-schemas for charts:\n"
+                for chart in ${source_charts[@]}; do
+                    printf " + %s\n" "${chart}"
+                    if [[ -f "${chart}/values.yaml" ]]; then
+                        helm schema-gen ${chart}/values.yaml > ${chart}/values.schema.json
+                    else
+                        printf "   values in %s/values.yaml doesn't exist\n   mearging *.example.yaml to values.yaml...\n" "${chart}"
+                        yq ea '. as $item ireduce ({}; . * $item )' ${chart}/*.example.yaml > ${chart}/values.yaml
+                        printf "   mearged all examples file in ${chart}/values.yaml successful\n"
+                        helm schema-gen ${chart}/values.yaml > ${chart}/values.schema.json
+                    fi
+                done
+            
+          - name: Lint helm charts
+            run: |
+                source_charts=${{ steps.get_source_charts.outputs.source_charts }}
+                printf "Running helm lint:\n"
+                for chart in ${source_charts[@]}; do
+                    printf " + linting %s\n" "${chart}"
+                    helm lint ${chart}/.
+                done
+
+          - name: Build helm package
+            run: |
+                source_charts=${{ steps.get_source_charts.outputs.source_charts }}
+                printf "Creating helm package:\n" 
+                for chart in ${source_charts[@]}; do
+                    printf " + %s\n" "${chart}"
+                    helm package ${chart}/ --dependency-update --destination ./charts
+                done
+
+          - name: Build helm index
+            run: |
+                printf "Building helm index.yaml\n"
+                helm repo index charts --url https://obervinov.github.io/helm-charts --merge index.yaml .
+
+          - name: Check repository structure
+            run: |
+                ls -lah
+                ls -lah src/
+                ls -lah charts/
+
+
+        #   - name: Commit & Push changes
+        #     uses: actions-js/push@master
+        #     with:
+        #       github_token: ${{ secrets.GITHUB_TOKEN }}
+        #       message: "Build schemas, packages and index for helm repository by GitHub Actions: ${{ github.sha }}"
