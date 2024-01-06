@@ -99,7 +99,8 @@ jobs:
         run: |
             # Build helm index
             printf "Building helm index.yaml\n"
-            helm repo index charts --url https://obervinov.github.io/helm-charts --merge index.yaml
+            helm repo index charts --url https://helm-charts.charafee.cfd/helm-charts --merge index.yaml
+            mv charts/index.yaml index.yaml
 
       - name: Check repository structure
         run: |
