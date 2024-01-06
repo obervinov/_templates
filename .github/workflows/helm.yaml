@@ -21,7 +21,7 @@ jobs:
         for chart in ${charts[@]}; do
             printf " + %s\n" "${chart}"
         done
-        echo "{charts}={`echo $charts`}" >> $GITHUB_ENV
+        echo "charts=`echo $charts`" >> $GITHUB_ENV
 
     - name: Template helm charts
       run: |
@@ -61,7 +61,7 @@ jobs:
             for chart in ${charts[@]}; do
                 printf " + %s\n" "${chart}"
             done
-            echo "{charts}={`echo $charts`}" >> $GITHUB_ENV
+            echo "charts=`echo $charts`" >> $GITHUB_ENV
 
       - name: Generate json schema for helm charts
         run: |
