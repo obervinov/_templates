@@ -21,18 +21,17 @@
           - name: Get helm-charts list in source directory
             id: get_source_charts
             run: |
-                source_charts=$(ls -d src/*)
-                printf "Discovered source_charts:\n"
-                for chart in ${source_charts[@]}; do
+                charts=$(ls -d src/*)
+                printf "Discovered charts:\n"
+                for chart in ${charts[@]}; do
                     printf " + %s\n" "${chart}"
                 done
-                echo "::set-output name=source_charts::$source_charts"
+                echo "{charts}={$charts}" >> $GITHUB_ENV
 
           - name: Generate json schema for helm charts
             run: |
-                source_charts=${{ steps.get_source_charts.outputs.source_charts }}
                 printf "Creating json-schemas for charts:\n"
-                for chart in ${source_charts[@]}; do
+                for chart in ${charts[@]}; do
                     printf " + %s\n" "${chart}"
                     if [[ -f "${chart}/values.yaml" ]]; then
                         helm schema-gen ${chart}/values.yaml > ${chart}/values.schema.json
@@ -46,27 +45,24 @@
 
           - name: Template helm charts
             run: |
-                source_charts=${{ steps.get_source_charts.outputs.source_charts }}
                 printf "Templating helm charts:\n"
-                for chart in ${source_charts[@]}; do
+                for chart in ${charts[@]}; do
                     printf " + %s\n" "${chart}"
                     helm template ${chart}/. -f ${chart}/values.yaml
                 done
 
           - name: Lint helm charts
             run: |
-                source_charts=${{ steps.get_source_charts.outputs.source_charts }}
                 printf "Running helm lint:\n"
-                for chart in ${source_charts[@]}; do
+                for chart in ${charts[@]}; do
                     printf " + linting %s\n" "${chart}"
                     helm lint ${chart}/.
                 done
 
           - name: Build helm package
             run: |
-                source_charts=${{ steps.get_source_charts.outputs.source_charts }}
                 printf "Creating helm package:\n" 
-                for chart in ${source_charts[@]}; do
+                for chart in ${charts[@]}; do
                     printf " + %s\n" "${chart}"
                     helm package ${chart}/ --dependency-update --destination ./charts
                 done
