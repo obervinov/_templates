@@ -4,9 +4,45 @@
     on: [workflow_call]  # yamllint disable-line rule:truthy
     
     jobs:
+      check-helm-charts:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v3
+    
+          - name: Install helm and dependencies
+            run: |
+                curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+
+          - name: Get helm-charts list in source directory
+            id: get_source_charts
+            run: |
+                charts=$(ls -d src/*)
+                printf "Discovered charts:\n"
+                for chart in ${charts[@]}; do
+                    printf " + %s\n" "${chart}"
+                done
+                echo "{charts}={$charts}" >> $GITHUB_ENV
+
+          - name: Template helm charts
+            run: |
+                printf "Templating helm charts:\n"
+                for chart in ${charts[@]}; do
+                    printf " + %s\n" "${chart}"
+                    helm template ${chart}/. -f ${chart}/values.yaml
+                done
+    
+          - name: Lint helm charts
+            run: |
+                printf "Running helm lint:\n"
+                for chart in ${charts[@]}; do
+                    printf " + linting %s\n" "${chart}"
+                    helm lint ${chart}/.
+                done
+
+
+
       build-helm-registry-template:
         runs-on: ubuntu-latest
-
         steps:
           - uses: actions/checkout@main
             with:
@@ -41,22 +77,6 @@
                         printf "   mearged all examples file in ${chart}/values.yaml successful\n"
                         helm schema-gen ${chart}/values.yaml > ${chart}/values.schema.json
                     fi
-                done
-
-          - name: Template helm charts
-            run: |
-                printf "Templating helm charts:\n"
-                for chart in ${charts[@]}; do
-                    printf " + %s\n" "${chart}"
-                    helm template ${chart}/. -f ${chart}/values.yaml
-                done
-
-          - name: Lint helm charts
-            run: |
-                printf "Running helm lint:\n"
-                for chart in ${charts[@]}; do
-                    printf " + linting %s\n" "${chart}"
-                    helm lint ${chart}/.
                 done
 
           - name: Build helm package
