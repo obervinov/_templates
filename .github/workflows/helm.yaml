@@ -28,6 +28,7 @@ jobs:
         printf "Templating helm charts:\n"
         for chart in ${charts[@]}; do
             printf " + %s\n" "${chart}"
+            helm dependency update ${chart}/.
             helm template ${chart}/. -f ${chart}/values.yaml
         done
 
