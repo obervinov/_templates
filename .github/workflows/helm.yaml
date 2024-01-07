@@ -99,7 +99,7 @@ jobs:
         run: |
             # Build helm index
             printf "Building helm index.yaml\n"
-            helm repo index charts --url https://helm-charts.charafee.cfd --merge index.yaml
+            helm repo index charts --url https://helm-charts.charafee.cfd/charts --merge index.yaml
             mv charts/index.yaml index.yaml
 
       - name: Commit & Push changes
