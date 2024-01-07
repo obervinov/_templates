@@ -107,3 +107,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           message: "Build schemas, packages and index for helm repository by GitHub Actions: ${{ github.sha }}"
+          branch: ${{ github.ref }}
