@@ -102,14 +102,8 @@ jobs:
             helm repo index charts --url https://helm-charts.charafee.cfd/helm-charts --merge index.yaml
             mv charts/index.yaml index.yaml
 
-      - name: Check repository structure
-        run: |
-            ls -lah
-            ls -lah src/
-            ls -lah charts/
-
-    #   - name: Commit & Push changes
-    #     uses: actions-js/push@master
-    #     with:
-    #       github_token: ${{ secrets.GITHUB_TOKEN }}
-    #       message: "Build schemas, packages and index for helm repository by GitHub Actions: ${{ github.sha }}"
+      - name: Commit & Push changes
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          message: "Build schemas, packages and index for helm repository by GitHub Actions: ${{ github.sha }}"
