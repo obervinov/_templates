@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Extract version from setup.py
+      - name: Extract version from ref
         run: echo "version=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
         id: version
 

@@ -1,0 +1,76 @@
+---
+name: Plan and Apply Terraform
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+
+jobs:
+  terraform-fmt-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Check cli
+        run: |
+          terraform --version
+
+      - name: Terraform format code
+        id: terraform-fmt-check
+        run: |
+          terraform fmt -recursive
+
+      - name: Commit & Push changes
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          message: "Apply Terraform formatting changes by GitHub Actions: ${{ github.sha }}"
+
+
+  terraform-docs-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Install Terraform docs
+        run: |
+          curl -Lo /tmp/terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.17.0/terraform-docs-v0.17.0-$(uname)-amd64.tar.gz
+          tar -xzf /tmp/terraform-docs.tar.gz -C /tmp
+          chmod +x /tmp/terraform-docs
+          mv /tmp/terraform-docs /usr/local/bin/terraform-docs
+      
+      - name: Check cli
+        run: |
+          terraform-docs --version
+  
+      - name: Terraform docs
+        run: |
+          if [ -f "terraform-docs.txt" ]; then
+            while IFS= read -r dir; do
+              terraform-docs markdown "$dir" > "$dir/README.md"
+              echo "Updated $dir/README.md"
+            done < "terraform-docs.txt"
+          else
+            echo "::warning::terraform-docs.txt not found. Skipping the task."
+          fi
+    
+      - name: Commit & Push changes
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          message: "Apply Terraform formatting changes by GitHub Actions: ${{ github.sha }}"
