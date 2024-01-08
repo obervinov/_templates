@@ -7,7 +7,7 @@ jobs:
   verify-package-version-template:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Extract version in setup.py
         run: echo "version=v$(grep version='.*' setup.py | awk -F '=' '{print $2}'| sed "s/'//g" | sed 's/,//g')" >> $GITHUB_OUTPUT
@@ -46,7 +46,7 @@ jobs:
   verify-package-install-template:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Extract version from ref
         run: echo "version=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
