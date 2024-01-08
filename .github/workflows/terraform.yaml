@@ -53,11 +53,11 @@ jobs:
           tar -xzf /tmp/terraform-docs.tar.gz -C /tmp
           chmod +x /tmp/terraform-docs
           mv /tmp/terraform-docs /usr/local/bin/terraform-docs
-      
+
       - name: Check cli
         run: |
           terraform-docs --version
-  
+
       - name: Terraform docs
         run: |
           if [ -f "terraform-docs.txt" ]; then
@@ -68,7 +68,7 @@ jobs:
           else
             echo "::warning::terraform-docs.txt not found. Skipping the task."
           fi
-    
+
       - name: Commit & Push changes
         uses: actions-js/push@master
         with:

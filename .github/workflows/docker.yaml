@@ -20,16 +20,16 @@ jobs:
       - name: Determine tag
         id: determine_tag
         run: |
-          # Determine tag from GITHUB_REF 
+          # Determine tag from GITHUB_REF
           echo "TAG=$(if [ -z \"$GITHUB_REF_NAME\" ]; then echo ${GITHUB_REF#refs/tags/}; else echo ${GITHUB_REF_NAME//\//-}; fi)" >> $GITHUB_ENV
-          
+
       - name: Build an image from Dockerfile
         run: |
           # Build image from Dockerfile
           docker build -t ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#obervinov/}:$TAG --build-arg PROJECT_NAME=${GITHUB_REPOSITORY#obervinov/} --build-arg PROJECT_DESCRIPTION=${project_description} ${extra_build_args} .
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
+        uses: aquasecurity/trivy-action@d43c1f16c00cfd3978dde6c07f4bbcf9eb6993ca
         with:
           image-ref: 'ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:$TAG'
           format: 'template'
