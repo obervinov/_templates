@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## v1.0.8 - 2024-01-08
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.7...v1.0.8 by @obervinov in https://github.com/obervinov/_templates/pull/40
+#### 🚀 Features
+* (Bump actions/setup-python from 3 to 5 in /.github/workflows)[https://github.com/obervinov/_templates/pull/40]
+
+
+## v1.0.7 - 2024-01-08
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.6...v1.0.7 by @obervinov in https://github.com/obervinov/_templates/pull/42
+#### 🐛 Bug Fixes
+* (Fix small errors and typos)[https://github.com/obervinov/_templates/issues/41]
+
 
 ## v1.0.7 - 2024-01-08
 ### What's Changed
