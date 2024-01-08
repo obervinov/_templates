@@ -29,7 +29,7 @@ jobs:
           docker build -t ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#obervinov/}:$TAG --build-arg PROJECT_NAME=${GITHUB_REPOSITORY#obervinov/} --build-arg PROJECT_DESCRIPTION=${project_description} ${extra_build_args} .
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
+        uses: aquasecurity/trivy-action@d43c1f16c00cfd3978dde6c07f4bbcf9eb6993ca
         with:
           image-ref: 'ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:$TAG'
           format: 'template'
