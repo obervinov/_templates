@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## v1.0.11 - 2024-01-08
 ### What's Changed
-**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.10...v1.0.11 by @obervinov in https://github.com/obervinov/_templates/pull/38
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.10...v1.0.11 by @obervinov in https://github.com/obervinov/_templates/pull/37
 #### 🚀 Features
 * (Bump actions/checkout from 3 to 4 in /.github/workflows)[https://github.com/obervinov/_templates/pull/37]
 
