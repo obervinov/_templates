@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## v1.0.10 - 2024-01-08
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.8...v1.0.9 by @obervinov in https://github.com/obervinov/_templates/pull/38
+#### 🚀 Features
+* (Bump github/codeql-action from 2 to 3 in /.github/workflows)[https://github.com/obervinov/_templates/pull/38]
+
+
 ## v1.0.9 - 2024-01-08
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.8...v1.0.9 by @obervinov in https://github.com/obervinov/_templates/pull/39
