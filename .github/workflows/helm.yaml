@@ -7,42 +7,42 @@ jobs:
   check-helm-charts:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Install helm and dependencies
-      run: |
-        # Install helm
-        curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      - name: Install helm and dependencies
+        run: |
+          # Install helm
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
 
-    - name: Get helm-charts list in source directory
-      id: get_source_charts
-      run: |
-        # Discovery helm charts
-        charts=$(ls -d src/*)
-        printf "Discovered charts:\n"
-        for chart in ${charts[@]}; do
-            printf " + %s\n" "${chart}"
-        done
-        echo "charts=`echo $charts`" >> $GITHUB_ENV
+      - name: Get helm-charts list in source directory
+        id: get_source_charts
+        run: |
+          # Discovery helm charts
+          charts=$(ls -d src/*)
+          printf "Discovered charts:\n"
+          for chart in ${charts[@]}; do
+              printf " + %s\n" "${chart}"
+          done
+          echo "charts=`echo $charts`" >> $GITHUB_ENV
 
-    - name: Template helm charts
-      run: |
-        # Template helm charts
-        printf "Templating helm charts:\n"
-        for chart in ${charts[@]}; do
-            printf " + %s\n" "${chart}"
-            helm dependency update ${chart}/.
-            helm template ${chart}/. -f ${chart}/values.yaml
-        done
+      - name: Template helm charts
+        run: |
+          # Template helm charts
+          printf "Templating helm charts:\n"
+          for chart in ${charts[@]}; do
+              printf " + %s\n" "${chart}"
+              helm dependency update ${chart}/.
+              helm template ${chart}/. -f ${chart}/values.yaml
+          done
 
-    - name: Lint helm charts
-      run: |
-        # Lint helm charts
-        printf "Running helm lint:\n"
-        for chart in ${charts[@]}; do
-            printf " + linting %s\n" "${chart}"
-            helm lint ${chart}/.
-        done
+      - name: Lint helm charts
+        run: |
+          # Lint helm charts
+          printf "Running helm lint:\n"
+          for chart in ${charts[@]}; do
+              printf " + linting %s\n" "${chart}"
+              helm lint ${chart}/.
+          done
 
 
   build-helm-registry-template:
@@ -51,57 +51,57 @@ jobs:
     steps:
       - uses: actions/checkout@main
         with:
-            persist-credentials: false
-            fetch-depth: 0
+          persist-credentials: false
+          fetch-depth: 0
 
       - name: Install helm and dependencies
         run: |
-            # Install helm and dependencies
-            curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-            helm plugin install https://github.com/karuppiah7890/helm-schema-gen.git
+          # Install helm and dependencies
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+          helm plugin install https://github.com/karuppiah7890/helm-schema-gen.git
 
       - name: Get helm-charts list in source directory
         id: get_source_charts
         run: |
-            # Discovery helm charts
-            charts=$(ls -d src/*)
-            printf "Discovered charts:\n"
-            for chart in ${charts[@]}; do
-                printf " + %s\n" "${chart}"
-            done
-            echo "charts=`echo $charts`" >> $GITHUB_ENV
+          # Discovery helm charts
+          charts=$(ls -d src/*)
+          printf "Discovered charts:\n"
+          for chart in ${charts[@]}; do
+              printf " + %s\n" "${chart}"
+          done
+          echo "charts=`echo $charts`" >> $GITHUB_ENV
 
       - name: Generate json schema for helm charts
         run: |
-            # Generate json schema for helm charts
-            printf "Creating json-schemas for charts:\n"
-            for chart in ${charts[@]}; do
-                printf " + %s\n" "${chart}"
-                if [[ -f "${chart}/values.yaml" ]]; then
-                    helm schema-gen ${chart}/values.yaml > ${chart}/values.schema.json
-                else
-                    printf "   values in %s/values.yaml doesn't exist\n   mearging *.example.yaml to values.yaml...\n" "${chart}"
-                    yq ea '. as $item ireduce ({}; . * $item )' ${chart}/*.example.yaml > ${chart}/values.yaml
-                    printf "   mearged all examples file in ${chart}/values.yaml successful\n"
-                    helm schema-gen ${chart}/values.yaml > ${chart}/values.schema.json
-                fi
-            done
+          # Generate json schema for helm charts
+          printf "Creating json-schemas for charts:\n"
+          for chart in ${charts[@]}; do
+              printf " + %s\n" "${chart}"
+              if [[ -f "${chart}/values.yaml" ]]; then
+                  helm schema-gen ${chart}/values.yaml > ${chart}/values.schema.json
+              else
+                  printf "   values in %s/values.yaml doesn't exist\n   mearging *.example.yaml to values.yaml...\n" "${chart}"
+                  yq ea '. as $item ireduce ({}; . * $item )' ${chart}/*.example.yaml > ${chart}/values.yaml
+                  printf "   mearged all examples file in ${chart}/values.yaml successful\n"
+                  helm schema-gen ${chart}/values.yaml > ${chart}/values.schema.json
+              fi
+          done
 
       - name: Build helm package
         run: |
-            # Build helm package
-            printf "Creating helm package:\n" 
-            for chart in ${charts[@]}; do
-                printf " + %s\n" "${chart}"
-                helm package ${chart}/ --dependency-update --destination ./charts
-            done
+          # Build helm package
+          printf "Creating helm package:\n"
+          for chart in ${charts[@]}; do
+              printf " + %s\n" "${chart}"
+              helm package ${chart}/ --dependency-update --destination ./charts
+          done
 
       - name: Build helm index
         run: |
-            # Build helm index
-            printf "Building helm index.yaml\n"
-            helm repo index charts --url https://helm-charts.charafee.cfd/charts --merge index.yaml
-            mv charts/index.yaml index.yaml
+          # Build helm index
+          printf "Building helm index.yaml\n"
+          helm repo index charts --url https://helm-charts.charafee.cfd/charts --merge index.yaml
+          mv charts/index.yaml index.yaml
 
       - name: Commit & Push changes
         uses: actions-js/push@master
