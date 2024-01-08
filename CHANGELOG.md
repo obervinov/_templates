@@ -3,18 +3,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## v1.0.6 - 2023-12-26
+## v1.0.6 - 2024-01-08
 ### What's Changed
-**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.5...v1.0.6 by @obervinov in https://github.com/obervinov/_templates/pull/1
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.5...v1.0.6 by @obervinov in https://github.com/obervinov/_templates/pull/32
 #### 🐛 Bug Fixes
-* 
+* (Fix typos in templates)[https://github.com/obervinov/_templates/issues/27]
+* (Update the outdated save state in GitHub Actions)[https://github.com/obervinov/_templates/issues/34]
 #### 📚 Documentation
-* 
+* (Update repository map)[https://github.com/obervinov/_templates/issues/30]
 #### 💥 Breaking Changes
-* 
+* **Renamed all workflow files**
 #### 🚀 Features
-* 
-
+* (Add support EXTRA_ARGS and PROJECT_VERSION in docker build command)[https://github.com/obervinov/_templates/issues/26]
+* (Terraform-docs markdown for automatic creation and updating of documents)[https://github.com/obervinov/_templates/issues/29]
+* (Add workflow for helm charts repository)[https://github.com/obervinov/_templates/issues/31]
+* (Add Dependabot for GitHub Actions)[https://github.com/obervinov/_templates/issues/33]
 
 
 ## v1.0.5 - 2023-08-22
