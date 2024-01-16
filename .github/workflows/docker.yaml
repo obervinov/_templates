@@ -21,11 +21,16 @@ jobs:
         run: |
           # Determine tag from GITHUB_REF
           echo "TAG=$(if [ -z \"$GITHUB_REF_NAME\" ]; then echo ${GITHUB_REF#refs/tags/}; else echo ${GITHUB_REF_NAME//\//-}; fi)" >> $GITHUB_ENV
+      
+      - name: Determine project name
+        run: |
+          # Determine project name from GITHUB_REPOSITORY
+          echo "PROJECT_NAME=${GITHUB_REPOSITORY#obervinov/}" >> $GITHUB_ENV
 
       - name: Build an image from Dockerfile
         run: |
           # Build image from Dockerfile
-          docker build -t ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#obervinov/}:$TAG --build-arg PROJECT_NAME=${GITHUB_REPOSITORY#obervinov/} .
+          docker build -t ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#obervinov/}:$TAG --build-arg PROJECT_NAME=${GITHUB_REPOSITORY#obervinov/} --build-arg PROJECT_NAME=${PROJECT_NAME} --build-arg PROJECT_VERSION=${TAG} .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@d43c1f16c00cfd3978dde6c07f4bbcf9eb6993ca
