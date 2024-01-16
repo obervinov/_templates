@@ -26,7 +26,7 @@ jobs:
         run: |
           # Determine project name from GITHUB_REPOSITORY
           echo "PROJECT_NAME=${GITHUB_REPOSITORY#${{ github.repository_owner }}/}" >> $GITHUB_ENV
-      
+
       - name: Determine project description
         run: |
           # Determine project description from GITHUB_REPOSITORY
