@@ -30,12 +30,12 @@ jobs:
       - name: Determine project description
         run: |
           # Determine project description from GITHUB_REPOSITORY
-          echo "PROJECT_DESCRIPTION=$(curl -s https://api.github.com/repos/${{ github.repository }} | jq .description)" >> $GITHUB_ENV
+          echo "PROJECT_DESCRIPTION=$(curl -s https://api.github.com/repos/${{ github.repository }} | jq .description | sed 's/\"//g')" >> $GITHUB_ENV
 
       - name: Build an image from Dockerfile
         run: |
           # Build image from Dockerfile
-          docker build -t ghcr.io/${{ github.repository }}:${TAG} --build-arg="PROJECT_NAME=${{ github.event.repository.name }}" --build-arg="PROJECT_NAME=${PROJECT_NAME}" --build-arg="PROJECT_VERSION=${TAG}" --build-arg="PROJECT_DESCRIPTION='${PROJECT_DESCRIPTION}'" .
+          docker build -t ghcr.io/${{ github.repository }}:${TAG} --build-arg="PROJECT_NAME=${{ github.event.repository.name }}" --build-arg="PROJECT_NAME=${PROJECT_NAME}" --build-arg="PROJECT_VERSION=${TAG}" --build-arg="PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}" .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@d43c1f16c00cfd3978dde6c07f4bbcf9eb6993ca
