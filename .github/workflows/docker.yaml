@@ -35,12 +35,12 @@ jobs:
       - name: Build an image from Dockerfile
         run: |
           # Build image from Dockerfile
-          docker build -t ghcr.io/${{ github.repository }}:$TAG --build-arg PROJECT_NAME=${GITHUB_REPOSITORY#${{ github.repository_owner }}/} --build-arg PROJECT_NAME=${PROJECT_NAME} --build-arg PROJECT_VERSION=${TAG} --build-arg PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION} .
+          docker build -t ghcr.io/${{ github.repository }}:$TAG --build-arg PROJECT_NAME=${{ github.event.repository.name }} --build-arg PROJECT_NAME=${PROJECT_NAME} --build-arg PROJECT_VERSION=${TAG} --build-arg PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION} .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@d43c1f16c00cfd3978dde6c07f4bbcf9eb6993ca
         with:
-          image-ref: 'ghcr.io/${{ github.actor }}/${{ github.event.repository.name }}:${{ env.TAG }}'
+          image-ref: 'ghcr.io/${{ github.repository }}:${{ env.TAG }}'
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
