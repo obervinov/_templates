@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.0.12 - 2024-01-16
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.11...v1.0.12 by @obervinov in https://github.com/obervinov/_templates/pull/
+#### 🐛 Bug Fixes
+* (Fix PROJECT_DESCRIPTION variable in docker workflow)[https://github.com/obervinov/_templates/issues/45]
+* (Fix image reference `TAG` for Trivy job)[https://github.com/obervinov/_templates/issues/46]
+
+
 ## v1.0.11 - 2024-01-08
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.10...v1.0.11 by @obervinov in https://github.com/obervinov/_templates/pull/37
