@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.11...v1.0.12 by @obervinov in https://github.com/obervinov/_templates/pull/47
 #### 🐛 Bug Fixes
-* (Remove outdated `PROJECT_DESCRIPTION` variable in docker workflow)[https://github.com/obervinov/_templates/issues/45]
+* (Fix PROJECT_DESCRIPTION variable in docker workflow #45)[https://github.com/obervinov/_templates/issues/45]
 * (Fix image reference `TAG` for Trivy job)[https://github.com/obervinov/_templates/issues/46]
 #### 🚀 Features
 * (Add support environment variables `PROJECT_NAME` and `PROJECT_VERSION` for docker build)[https://github.com/obervinov/_templates/issues/48]
