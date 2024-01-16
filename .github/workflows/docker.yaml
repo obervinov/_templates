@@ -27,7 +27,7 @@ jobs:
         id: determine_project_description
         run: |
           # Determine project description from README.md
-          echo "PROJECT_DESCRIPTION=$(awk '/^##.*About this project/,/^$/' README.md | sed '/^$/d')" >> $GITHUB_ENV
+          echo "PROJECT_DESCRIPTION='$(awk '/^##.*About this project/,/^$/' README.md | sed '/^$/d')'" >> $GITHUB_ENV
 
       - name: Build an image from Dockerfile
         run: |
