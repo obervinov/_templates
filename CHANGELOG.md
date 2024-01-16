@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## v1.0.12 - 2024-01-16
 ### What's Changed
-**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.11...v1.0.12 by @obervinov in https://github.com/obervinov/_templates/pull/
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.11...v1.0.12 by @obervinov in https://github.com/obervinov/_templates/pull/47
 #### 🐛 Bug Fixes
 * (Fix PROJECT_DESCRIPTION variable in docker workflow)[https://github.com/obervinov/_templates/issues/45]
 * (Fix image reference `TAG` for Trivy job)[https://github.com/obervinov/_templates/issues/46]

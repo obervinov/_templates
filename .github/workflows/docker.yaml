@@ -22,7 +22,7 @@ jobs:
         run: |
           # Determine tag from GITHUB_REF
           echo "TAG=$(if [ -z \"$GITHUB_REF_NAME\" ]; then echo ${GITHUB_REF#refs/tags/}; else echo ${GITHUB_REF_NAME//\//-}; fi)" >> $GITHUB_ENV
-      
+
       - name: Determine project description
         id: determine_project_description
         run: |
