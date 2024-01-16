@@ -35,7 +35,7 @@ jobs:
       - name: Build an image from Dockerfile
         run: |
           # Build image from Dockerfile
-          docker build -t ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}:$TAG --build-arg PROJECT_NAME=${GITHUB_REPOSITORY#${{ github.repository_owner }}/} --build-arg PROJECT_NAME=${PROJECT_NAME} --build-arg PROJECT_VERSION=${TAG} --build-arg PROJECT_DESCRIPTION={PROJECT_DESCRIPTION} .
+          docker build -t ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}:$TAG --build-arg PROJECT_NAME=${GITHUB_REPOSITORY#${{ github.repository_owner }}/} --build-arg PROJECT_NAME=${PROJECT_NAME} --build-arg PROJECT_VERSION=${TAG} --build-arg PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION} .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@d43c1f16c00cfd3978dde6c07f4bbcf9eb6993ca
