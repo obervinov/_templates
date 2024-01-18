@@ -1,0 +1,62 @@
+---
+name: Verify poetry package template
+
+on: [workflow_call]  # yamllint disable-line rule:truthy
+
+jobs:
+  verify-package-version-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version in pyproject.toml
+        run: echo "version=v$(grep 'version = ".*"' pyproject.toml| awk '{print $3}' | sed 's/"//g')" >> $GITHUB_OUTPUT
+        id: pyproject-version
+
+      - name: Extract version in CHANGELOG.md
+        run: echo "version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_OUTPUT
+        id: changelog-version
+
+      - uses: actions-ecosystem/action-get-latest-tag@v1
+        id: tag
+
+      - name: Incorrect package version in pyproject.toml
+        run: |
+            echo "::error The Git tag already matches the versions specified in pyproject.toml::Please check the version in those file and increase it according to your update."
+            exit 1
+        if: ${{ steps.pyproject-version.outputs.version == steps.tag.outputs.tag }}
+
+      - name: Incorrect package version in changelog.md
+        run: |
+            echo "::error The Git tag already matches the versions specified in pyproject.toml::Please check the version in those file and increase it according to your update."
+            exit 1
+        if: ${{ steps.changelog-version.outputs.version == steps.tag.outputs.tag }}
+
+      - name: Incorrect package version between pyproject.toml and changelog.md
+        run: |
+            echo "::error The package version between files pyproject.toml and changelog.md is different::Please check the version in those file and increase it according to your update."
+            exit 1
+        if: ${{ steps.pyproject-version.outputs.version != steps.changelog-version.outputs.version }}
+
+
+  verify-package-install-template:
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+        poetry-version: ["1.7.1"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+
+      - name: Testing install module and all dependencies
+        run: poetry install
+
