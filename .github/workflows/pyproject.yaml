@@ -60,3 +60,29 @@ jobs:
       - name: Testing install module and all dependencies
         run: poetry install
 
+  
+  build-poetry-dependencies-template:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.10
+
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: 1.7.1
+
+      - name: Testing install module and all dependencies
+        run: poetry install
+
+      - name: Commit & Push changes
+        uses: actions-js/push@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          message: "Build Poetry lock by GitHub Actions: ${{ github.sha }}"
