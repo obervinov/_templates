@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.0.12 - 2024-01-19
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.11...v1.0.12 by @obervinov in https://github.com/obervinov/_templates/pull/47
+#### 🐛 Bug Fixes
+* (Fix PROJECT_DESCRIPTION variable in docker workflow #45)[https://github.com/obervinov/_templates/issues/45]
+* (Fix image reference `TAG` for Trivy job)[https://github.com/obervinov/_templates/issues/46]
+#### 🚀 Features
+* (Add support environment variables `PROJECT_NAME` and `PROJECT_VERSION` for docker build)[https://github.com/obervinov/_templates/issues/48]
+#### 💥 Breaking Changes
+* (Add poetry support for python repositories)[https://github.com/obervinov/_templates/issues/49]
+
+
 ## v1.0.11 - 2024-01-08
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.10...v1.0.11 by @obervinov in https://github.com/obervinov/_templates/pull/37
@@ -43,7 +55,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.6...v1.0.7 by @obervinov in https://github.com/obervinov/_templates/pull/42
 #### 🐛 Bug Fixes
 * (Fix small errors and typos)[https://github.com/obervinov/_templates/issues/41]
-
 
 
 ## v1.0.6 - 2024-01-08
