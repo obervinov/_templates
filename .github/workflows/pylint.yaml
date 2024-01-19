@@ -31,7 +31,7 @@ jobs:
         run: poetry add --dev pylint flake8 pytest
 
       - name: Analysing the code with PYLINT
-        run: pylint $(git ls-files '*.py')
+        run: poetry run pylint $(git ls-files '*.py')
 
       - name: Analysing the code with FLAKE8
-        run: flake8 . --count --show-source --statistics
+        run: poetry run flake8 . --count --show-source --statistics
