@@ -23,26 +23,26 @@ This repository contains templates for creating standard repositories
 ## <img src="https://github.com/obervinov/_templates/blob/main/icons/stack.png" width="25" title="stack"> Repository map
 ```bash
 .
-├── .github
-│   ├── CODEOWNERS
-│   ├── ISSUE_TEMPLATE
-│   │   ├── bug_report.md
-│   │   ├── custom.md
-│   │   └── feature_request.md
-│   ├── pull_request_template.md
-│   └── workflows
-│       ├── .lint.yaml
-│       ├── .release.yaml
-│       ├── changelog.yaml
-│       ├── docker.yaml
-│       ├── helm.yaml
-│       ├── pylint.yaml
-│       ├── pypackage.yaml
-│       ├── pytest-with-vault.yaml
-│       ├── pytest.yaml
-│       ├── release.yaml
-│       ├── terraform.yaml
-│       └── yamllint.yaml
+.github/
+├── CODEOWNERS
+├── ISSUE_TEMPLATE
+│   ├── bug_report.md
+│   ├── custom.md
+│   └── feature_request.md
+├── dependabot.yml
+├── pull_request_template.md
+└── workflows
+    ├── changelog.yaml
+    ├── docker.yaml
+    ├── helm.yaml
+    ├── pylint.yaml
+    ├── pypackage.yaml
+    ├── pyproject.yaml
+    ├── pytest-with-vault.yaml
+    ├── pytest.yaml
+    ├── release.yaml
+    ├── terraform.yaml
+    └── yamllint.yaml
 ├── .gitignore
 ├── CHANGELOG.md
 ├── LICENSE
