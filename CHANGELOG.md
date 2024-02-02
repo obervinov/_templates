@@ -7,7 +7,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.12...v1.0.13 by @obervinov in https://github.com/obervinov/_templates/pull/57
 #### 🐛 Bug Fixes
-* Add support in matrix for python 3.9
+* Add support for `python 3.9` to matrix builds
 
 
 
