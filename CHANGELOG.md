@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.0.13 - 2024-02-02
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.12...v1.0.13 by @obervinov in https://github.com/obervinov/_templates/pull/1
+#### 🐛 Bug Fixes
+* Add support in matrix for python 3.9
+
+
+
 ## v1.0.12 - 2024-01-19
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.11...v1.0.12 by @obervinov in https://github.com/obervinov/_templates/pull/47
