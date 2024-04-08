@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.9", "3.10", "3.11"]
         poetry-version: ["1.7.1"]
     services:
       vault:
@@ -29,7 +29,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install poetry
-        uses: abatilo/actions-poetry@v2
+        uses: abatilo/actions-poetry@v3
         with:
           poetry-version: ${{ matrix.poetry-version }}
 
