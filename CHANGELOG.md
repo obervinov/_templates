@@ -3,9 +3,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.0.17 - 2024-04-08
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.16...v1.0.17 by @obervinov in https://github.com/obervinov/_templates/pull/65
+#### 🚀 Features
+* [Helm Template Workflow: helm template with values-test.yaml](https://github.com/obervinov/_templates/issues/63)
+#### 🐛 Bug Fixes
+* [Merge steps in wokrflow `pylint.yaml`](https://github.com/obervinov/_templates/issues/54)
+
+
 ## v1.0.16 - 2024-04-08
 ### What's Changed
-**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.14...v1.0.15 by @obervinov in https://github.com/obervinov/_templates/pull/52
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.15...v1.0.16 by @obervinov in https://github.com/obervinov/_templates/pull/52
 #### 🚀 Features
 * [Bump actions/setup-python from 4 to 5 in /.github/workflows](https://github.com/obervinov/_templates/pull/52)
 

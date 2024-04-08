@@ -27,12 +27,15 @@ jobs:
 
       - name: Template helm charts
         run: |
-          # Template helm charts
           printf "Templating helm charts:\n"
-          for chart in ${charts[@]}; do
+          for chart in "${charts[@]}"; do
               printf " + %s\n" "${chart}"
-              helm dependency update ${chart}/.
-              helm template ${chart}/. -f ${chart}/values.yaml
+              helm dependency update "${chart}/."
+              if [[ -f "${chart}/values-test.yaml" ]]; then
+                  helm template "${chart}/." -f "${chart}/values-test.yaml"
+              else
+                  helm template "${chart}/." -f "${chart}/values.yaml"
+              fi
           done
 
       - name: Lint helm charts
