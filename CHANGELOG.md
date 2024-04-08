@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 #### 🚀 Features
 * [Automatic version check of workflows in README.md](https://github.com/obervinov/_templates/issues/58)
 * [Helm Template Workflow: add support OCI registry for helm workflow](https://github.com/obervinov/_templates/issues/62)
+* [Docker Workflow: add workflow for mono repositories](https://github.com/obervinov/_templates/issues/64)
 #### 🐛 Bug Fixes
 * 
 
