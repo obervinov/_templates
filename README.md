@@ -19,3 +19,8 @@ This repository contains templates for creating standard repositories
   - yaml
   - helm
 - **Icons for documentation other repositories**
+
+## <img src="https://github.com/obervinov/_templates/blob/v1.0.5/icons/github-actions.png" width="25" title="github-actions"> GitHub Actions
+| Name  | Version |
+| ------------------------ | ----------- |
+| GitHub Actions Templates | [main](https://github.com/obervinov/_templates/tree/main) |
