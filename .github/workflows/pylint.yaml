@@ -24,11 +24,10 @@ jobs:
         with:
           poetry-version: ${{ matrix.poetry-version }}
 
-      - name: Install dependencies
-        run: poetry install
-
-      - name: Install dependencies
-        run: poetry add --dev pylint flake8 pytest
+      - name: Install package dependencies and dependencies for testing
+        run: |
+          poetry install
+          poetry add --dev pylint flake8 pytest
 
       - name: Analysing the code with PYLINT
         run: poetry run pylint $(git ls-files '*.py')
