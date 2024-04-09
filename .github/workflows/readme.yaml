@@ -11,13 +11,17 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Extract workflow version from README.md
-        run: echo "version=$(awk -F '|' '/GitHub Actions Templates/ {print $3}' README.md | awk '{print $1}' | grep -Eo "v[0-9]+\.[0-9]+\.[0-9]+" | head -1)" >> $GITHUB_OUTPUT
+        run: |
+          # Extract the version from the README.md file
+          echo "version=$(awk -F '|' '/GitHub Actions Templates/ {print $3}' README.md | awk '{print $1}' | grep -Eo "v[0-9]+\.[0-9]+\.[0-9]+" | head -1)" >> $GITHUB_OUTPUT
         id: readme_version
 
       - name: Extract workflow versions from files in .github/workflows
         run: |
+          # Find all workflow files and extract the version
           workflow_versions=()
-          for file in $(find .github/workflows/*.yaml); do
+          worflow_files=$(find .github/workflows/*.yaml)
+          for file in $worflow_files; do
             version=$(grep -oE '@v[0-9]+\.[0-9]+\.[0-9]+' "$file")
             workflow_versions+=("$version")
           done
