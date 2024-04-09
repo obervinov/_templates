@@ -22,7 +22,7 @@ jobs:
           workflow_versions=()
           worflow_files=$(find .github/workflows/*.yaml)
           for file in $worflow_files; do
-            version=$(grep -oE '@v[0-9]+\.[0-9]+\.[0-9]+' "$file")
+            version=$(grep -oE '@(release|fix|hotfix)?/v[0-9]+\.[0-9]+\.[0-9]+' "$file")
             workflow_versions+=("$version")
           done
           # Get the smallest version
