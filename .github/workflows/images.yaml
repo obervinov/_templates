@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-    
+
       - name: Find Dockerfiles
         id: find_dockerfiles
         run: echo "list=$(find . -type f -name Dockerfile)" >> $GITHUB_OUTPUT
@@ -37,7 +37,7 @@ jobs:
           echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
           apt-get update
           apt-get install trivy
-      
+
       - name: Scan Docker images with Trivy
         run: |
           for dockerfile in $(cat $GITHUB_OUTPUT); do
@@ -50,4 +50,3 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: 'trivy-results.sarif'
-

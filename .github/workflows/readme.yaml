@@ -17,7 +17,7 @@ jobs:
       - name: Extract workflow versions from files in .github/workflows
         run: |
           workflow_versions=()
-          for file in .github/workflows/*.yaml; do
+          for file in $(find .github/workflows/*.yaml); do
             version=$(grep -oE '@v[0-9]+\.[0-9]+\.[0-9]+' "$file")
             workflow_versions+=("$version")
           done
