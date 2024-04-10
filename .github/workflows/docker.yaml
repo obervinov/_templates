@@ -54,5 +54,5 @@ jobs:
       - name: Push docker image to ghcr
         run: |
           # Push image to ghcr
-          echo ${{ github.token }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker login ghcr.io -u ${{ github.actor }} --password ${{ github.token }}
           docker push ghcr.io/${{ github.repository_owner }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}:$TAG
