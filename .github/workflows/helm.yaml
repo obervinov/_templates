@@ -1,3 +1,4 @@
+# For monorepositories with helm charts
 ---
 name: Helm charts bundle template
 
@@ -6,6 +7,13 @@ on: [workflow_call]  # yamllint disable-line rule:truthy
 jobs:
   check-helm-charts:
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      checks: read
+      contents: write
+      packages: write
+      security-events: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -97,6 +105,17 @@ jobs:
           for chart in ${charts[@]}; do
               printf " + %s\n" "${chart}"
               helm package ${chart}/ --dependency-update --destination ./charts
+          done
+
+      - name: Push helm packages to oci registry
+        run: |
+          # Push helm packages to oci registry
+          printf "Pushing helm packages to oci registry\n"
+          packages=$(ls -l charts/*.tgz |awk '{print $9}')
+          for package in ${packages[@]}; do
+              printf " + %s\n" "${package}"
+              helm login -u ${{ github.actor }} -p ${{ github.token }} oci://ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}
+              helm push ${package} oci://ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}
           done
 
       - name: Build helm index

@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.1.0 - 2024-04-08
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.17...v1.1.0 by @obervinov in https://github.com/obervinov/_templates/pull/66
+#### 🚀 Features
+* [Automatic version check of workflows in README.md](https://github.com/obervinov/_templates/issues/58)
+* [Helm Template Workflow: add support OCI registry for helm workflow](https://github.com/obervinov/_templates/issues/62)
+* [Docker Workflow: add workflow for mono repositories](https://github.com/obervinov/_templates/issues/64)
+
+
 ## v1.0.17 - 2024-04-08
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.0.16...v1.0.17 by @obervinov in https://github.com/obervinov/_templates/pull/65
