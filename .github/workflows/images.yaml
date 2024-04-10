@@ -46,6 +46,7 @@ jobs:
       - name: Scan Docker images with Trivy
         run: |
           # Scan Docker images with Trivy
+          mkdir results
           for dockerfile in ${{ steps.find_dockerfiles.outputs.list }}; do
             image_name=$(echo $dockerfile | awk -F '/' '{print $3}')
             image_tag=$(cat $dockerfile | grep -i 'LABEL org.opencontainers.image.version'| awk '{print $3}')
