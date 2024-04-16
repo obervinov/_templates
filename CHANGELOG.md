@@ -11,7 +11,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 #### 📚 Documentation
 * Updated all issue and pull request templates
 #### 🐛 Bug Fixes
-* [Verify README.md template: not working with helm mono repositor](https://github.com/obervinov/_templates/issues/69)
+* [Verify README.md template: not working with helm mono repository](https://github.com/obervinov/_templates/issues/69)
+* [Helm charts bundle template: Not working helm workflow for helm mono repository](https://github.com/obervinov/_templates/issues/68)
 
 
 ## v1.1.1 - 2024-04-16
