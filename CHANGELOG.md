@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 #### 🚀 Features
 * 
 #### 📚 Documentation
-* Updated all issue templates
+* Updated all issue and pull request templates
 #### 🐛 Bug Fixes
 * [Verify README.md template: not working with helm mono repositor](https://github.com/obervinov/_templates/issues/69)
 
