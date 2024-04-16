@@ -8,8 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.1.1...v1.2.0 by @obervinov in https://github.com/obervinov/_templates/pull/
 #### 🚀 Features
 * 
+#### 📚 Documentation
+* Updated all issue templates
 #### 🐛 Bug Fixes
-*
+* [Verify README.md template: not working with helm mono repositor](https://github.com/obervinov/_templates/issues/69)
 
 
 ## v1.1.1 - 2024-04-16
