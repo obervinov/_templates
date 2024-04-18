@@ -1,6 +1,6 @@
 # _templates
-[![Release](https://github.com/obervinov/_templates/actions/workflows/.release.yaml/badge.svg)](https://github.com/obervinov/_templates/actions/workflows/.release.yaml)
-[![Tests and checks](https://github.com/obervinov/_templates/actions/workflows/.lint.yaml/badge.svg)](https://github.com/obervinov/_templates/actions/workflows/.lint.yaml)
+[![Release](https://github.com/obervinov/_templates/actions/workflows/_release.yaml/badge.svg)](https://github.com/obervinov/_templates/actions/workflows/_release.yaml)
+[![PR](https://github.com/obervinov/_templates/actions/workflows/_pr.yaml/badge.svg)](https://github.com/obervinov/_templates/actions/workflows/_pr.yaml)
 
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/obervinov/_templates?style=for-the-badge)
 ![GitHub last commit](https://img.shields.io/github/last-commit/obervinov/_templates?style=for-the-badge)
