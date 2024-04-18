@@ -39,7 +39,7 @@ jobs:
           printf "Release version: %s\n" "$release_version"
           release_body=$(sed -n "/## $release_version /,/## v/p" CHANGELOG.md | sed '$ d' | sed 's/\[.*\]//g' | sed 's/[(|)]//g')
           printf "Release body: %s\n" "$release_body"
-          echo "pr_body=$(echo $release_body | perl -pe 's/\n/\\n/g')" >> $GITHUB_OUTPUT
+          echo "pr_body=$(echo "$pr_body" | perl -pe 's/\n/<br>/g')" >> $GITHUB_OUTPUT
         id: changelog
         if: ${{ steps.find_pr.outputs.pr != null }}
 
