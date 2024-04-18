@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## v1.2.0 - 2024-04-18
 ### What's Changed
-**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.1.1...v1.2.0 by @obervinov in https://github.com/obervinov/_templates/pull/
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.1.1...v1.2.0 by @obervinov in https://github.com/obervinov/_templates/pull/71
 #### 🚀 Features
 * [Add a workflow to automatically create and update the PR body](https://github.com/obervinov/_templates/issues/55)
 #### 📚 Documentation
