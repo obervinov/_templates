@@ -14,23 +14,23 @@ jobs:
         id: find_pr
         run: |
           # Get all PRs
-          PRs=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls)
+          PRs=$(curl -q -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls)
           # Get the PR for the current branch
           current_branch=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
           printf "Current branch: %s\n" "$current_branch"
           pr=$(echo "$PRs" | sed '/"body":/,/"created_at":/d'| jq -r ".[] | select(.head.ref == \"$current_branch\") | .number")
           printf "Found PR with number: %s\n" "$pr"
-          echo "PR=$pr" >> $GITHUB_ENV
+          echo "pr=$pr" >> $GITHUB_ENV
 
-      - name: Check existence of PR
-        run: |
-          # Check if PR exists
-          if [[ -z "${{ steps.find_pr.outputs.pr }}" ]]; then
-            echo "No PR found for branch ${{ github.ref }}. Please create one."
-          else
-            echo "PR found for branch ${{ github.ref }} with number: ${{ steps.find_pr.outputs.pr }}"
-          fi
+      - name: PR does not exist
         id: check_pr
+        run: |
+            echo "::group::PR does not exist"
+            echo "The PR does not exist for the current branch"
+            echo "Please create a PR for the current branch"
+            echo "::endgroup::"
+            exit 1
+        if: ${{ steps.find_pr.outputs.pr == null }}
 
       - name: Get PR body from CHANGELOG.md
         run: |
