@@ -1,43 +1,45 @@
 ---
 name: Create and update Pull Request template
 
-on: [workflow_call]  # yamllint disable-line rule:truthy
+on: [workflow_call] # yamllint disable-line rule:truthy
 
 jobs:
   create-update-pr-template:
     runs-on: ubuntu-latest
     steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        - name: Find PR for current branch
-          id: find_pr
-          run: |
-            # Get all PRs
-            PRs=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls)
-            # Get the PR for the current branch
-            echo 'PR=$(echo "$PRs" | sed '/"body":/,/"created_at":/d'| jq -r ".[] | select(.head.ref == \"${{ github.ref }}\") | .number")' >> $GITHUB_OUTPUT
-    
-        - name: Check existence of PR
-          run: |
-            if [[ -z "${{ steps.find_pr.outputs.pr }}" ]]; then
+      - name: Find PR for current branch
+        id: find_pr
+        run: |
+          # Get all PRs
+          PRs=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls)
+          # Get the PR for the current branch
+          current_branch=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
+          echo 'PR=$(echo "$PRs" | sed '/"body":/,/"created_at":/d'| jq -r ".[] | select(.head.ref == \"$current_branch\") | .number")' >> $GITHUB_ENV
+
+      - name: Check existence of PR
+        run: |
+          # Check if PR exists
+          if [[ -z "${{ steps.find_pr.outputs.pr }}" ]]; then
             echo "No PR found for branch ${{ github.ref }}. Please create one."
-            else
+          else
             echo "PR found for branch ${{ github.ref }} with number: ${{ steps.find_pr.outputs.pr }}"
             exit 1
-            fi
-          id: check_pr
+          fi
+        id: check_pr
 
-        - name: Get PR body from CHANGELOG.md
-          run: |
-            # Get the PR body from the CHANGELOG.md file
-            release_version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')
-            pr_body=$(sed -n "/## $release_version /,/## v/p" CHANGELOG.md | sed '$ d' | sed 's/\[.*\]//g' | sed 's/[(|)]//g')
-          id: pr_body
-          if: ${{ steps.check_pr.outputs.pr != null }}
+      - name: Get PR body from CHANGELOG.md
+        run: |
+          # Get the PR body from the CHANGELOG.md file
+          release_version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')
+          pr_body=$(sed -n "/## $release_version /,/## v/p" CHANGELOG.md | sed '$ d' | sed 's/\[.*\]//g' | sed 's/[(|)]//g')
+        id: pr_body
+        if: ${{ steps.check_pr.outputs.pr != null }}
 
-        - name: Update PR body
-          run: |
-            # Update the PR body
-            curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" -X PATCH -d "{\"body\": \"$pr_body\"}" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls/${{ steps.find_pr.outputs.pr }}
-          if: ${{ steps.check_pr.outputs.pr != null }}
+      - name: Update PR body
+        run: |
+          # Update the PR body
+          curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" -X PATCH -d "{\"body\": \"$pr_body\"}" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls/${{ steps.find_pr.outputs.pr }}
+        if: ${{ steps.check_pr.outputs.pr != null }}
