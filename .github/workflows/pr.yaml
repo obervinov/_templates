@@ -16,14 +16,14 @@ jobs:
             # Get all PRs
             PRs=$(curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls)
             # Get the PR for the current branch
-            echo 'PR=$(echo $PRs | jq -r ".[] | select(.head.ref == \"${{ github.ref }}\") | .number")' >> $GITHUB_OUTPUT
+            echo 'PR=$(echo "$PRs" | sed '/"body":/,/"created_at":/d'| jq -r ".[] | select(.head.ref == \"${{ github.ref }}\") | .number")' >> $GITHUB_OUTPUT
     
         - name: Check existence of PR
           run: |
             if [[ -z "${{ steps.find_pr.outputs.pr }}" ]]; then
             echo "No PR found for branch ${{ github.ref }}. Please create one."
             else
-            echo "PR found for branch ${{ github.ref }}: ${{ steps.find_pr.outputs.pr }}"
+            echo "PR found for branch ${{ github.ref }} with number: ${{ steps.find_pr.outputs.pr }}"
             exit 1
             fi
           id: check_pr
