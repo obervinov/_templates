@@ -1,0 +1,19 @@
+---
+name: Close milestone after release
+
+on: [workflow_call] # yamllint disable-line rule:truthy
+
+jobs:
+  close-milestone:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Close milestone
+        run: |
+          # Close milestone
+          milestone=$(awk -F '|' '/Milestone/ {print $3}' README.md | awk '{print $1}' | grep -Eo "v[0-9]+\.[0-9]+\.[0-9]+" | head -1)
+          echo "Closing milestone $milestone"
+          gh milestone close $milestone
+        id: close_milestone
