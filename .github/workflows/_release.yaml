@@ -1,0 +1,17 @@
+---
+name: Create GitHub release
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: [main]
+    paths: ['.github/workflows/**']
+
+jobs:
+  lint:
+    uses: obervinov/_templates/.github/workflows/yamllint.yaml@main
+  changelog:
+    uses: obervinov/_templates/.github/workflows/changelog.yaml@main
+  create-release:
+    uses: obervinov/_templates/.github/workflows/release.yaml@main
+    # milestone:
+    #   uses: obervinov/_templates/.github/workflows/milestone.yaml@main # will be uncommented after release

@@ -31,12 +31,14 @@ jobs:
           for chart in ${charts[@]}; do
               printf " + %s\n" "${chart}"
           done
-          echo "charts=`echo $charts`" >> $GITHUB_ENV
+          echo "charts=`echo $charts`" >> $GITHUB_OUTPUT
 
       - name: Template helm charts
         run: |
+          # Template helm charts
+          printf "Charts found: ${{ steps.get_source_charts.outputs.charts }}\n"
           printf "Templating helm charts:\n"
-          for chart in "${charts[@]}"; do
+          for chart in ${{ steps.get_source_charts.outputs.charts }}; do
               printf " + %s\n" "${chart}"
               helm dependency update "${chart}/."
               if [[ -f "${chart}/values-test.yaml" ]]; then
@@ -114,7 +116,7 @@ jobs:
           packages=$(ls -l charts/*.tgz |awk '{print $9}')
           for package in ${packages[@]}; do
               printf " + %s\n" "${package}"
-              helm login -u ${{ github.actor }} -p ${{ github.token }} oci://ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}
+              helm registry login -u ${{ github.actor }} -p ${{ github.token }} ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}
               helm push ${package} oci://ghcr.io/${{ github.actor }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}
           done
 

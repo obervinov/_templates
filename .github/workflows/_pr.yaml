@@ -1,0 +1,20 @@
+---
+name: PR checks and tests
+
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches:
+      - '*'
+      - '*/*'
+      - '**'
+      - '!main'
+    paths:
+      - '.github/workflows/**'
+
+jobs:
+  lint:
+    uses: obervinov/_templates/.github/workflows/yamllint.yaml@main
+  changelog:
+    uses: obervinov/_templates/.github/workflows/changelog.yaml@main
+  pr:
+    uses: obervinov/_templates/.github/workflows/pr.yaml@release/v1.2.0  # will be updated to main after release
