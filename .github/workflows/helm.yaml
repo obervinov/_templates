@@ -31,12 +31,13 @@ jobs:
           for chart in ${charts[@]}; do
               printf " + %s\n" "${chart}"
           done
-          echo "charts=`echo $charts`" >> $GITHUB_ENV
+          echo "charts=`echo $charts`" >> $GITHUB_OUTPUT
 
       - name: Template helm charts
         run: |
+          printf "Charts found: ${{ steps.get_source_charts.outputs.charts }}\n"
           printf "Templating helm charts:\n"
-          for chart in "${{ steps.get_source_charts.outputs.charts }}"; do
+          for chart in "${{ steps.get_source_charts.outputs.charts }}[@]"; do
               printf " + %s\n" "${chart}"
               helm dependency update "${chart}/."
               if [[ -f "${chart}/values-test.yaml" ]]; then
