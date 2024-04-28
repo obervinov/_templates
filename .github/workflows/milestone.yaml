@@ -1,7 +1,7 @@
 ---
 name: Close milestone after release
 
-on: [workflow_call] # yamllint disable-line rule:truthy
+on: [workflow_call]  # yamllint disable-line rule:truthy
 
 jobs:
   close-milestone:

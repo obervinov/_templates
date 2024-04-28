@@ -1,7 +1,7 @@
 ---
 name: Create and update Pull Request template
 
-on: [workflow_call] # yamllint disable-line rule:truthy
+on: [workflow_call]  # yamllint disable-line rule:truthy
 
 jobs:
   create-update-pr-template:
