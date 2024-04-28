@@ -19,5 +19,12 @@ jobs:
           printf "Current version: %s\n" "$current_version"
           milestone=$(echo "$milestones" | jq -r ".[] | select(.title == \"$current_version\") | .number")
           printf "Found milestone with number: %s\n" "$milestone"
+          # Check milestone percentage of completion
+          milestone_completion=$(echo "$milestones" | jq -r ".[] | select(.number == \"$milestone\") | .closed_issues / .open_issues")
+          printf "Milestone completion: %s\n" "$milestone_completion"
+          if [ $milestone_completion -lt 1 ]; then
+            echo "Milestone is not complete"
+            exit 1
+          fi
           # Close the milestone
           curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" -X PATCH -d "{\"state\": \"closed\"}" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/milestones/$milestone
