@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.1...v1.2.2 by @obervinov in https://github.com/obervinov/_templates/pull/76
 #### 🐛 Bug Fixes
 * Change image repository name in the pytest workflow `ghcr.io/obervinov/tools/vault:1.13.2` -> `ghcr.io/obervinov/images/vault:1.13.2`
+* Fix `create PR` feature in the pr workflow
 
 
 ## v1.2.1 - 2024-04-28

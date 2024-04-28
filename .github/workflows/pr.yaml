@@ -31,7 +31,8 @@ jobs:
           release_body=$(sed -n "/## $release_version /,/## v/p" CHANGELOG.md | sed '$ d' | sed 's/\[.*\]//g' | sed 's/[(|)]//g' | perl -pe 's/\n/\\n/g')
           printf "Release body:\n%s\n" "$release_body"
           # Create new PR
-          pr_title=$(printf "Release %s" "echo ${{ github.ref }} | sed 's/refs\/heads\///'| sed 's/\// /g'")
+          new_version=$(echo ${{ github.ref }} | sed 's/refs\/heads\///'| sed 's/\// /g'")
+          pr_title="Release $new_version"
           curl -q -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" -X POST -d "{\"title\": \"$pr_title\", \"head\": \"${{ github.ref }}\", \"base\": \"main\", \"body\": \"$release_body\"}" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls
           printf "Created PR with number: %s\n" "$pr"
         if: ${{ steps.find_pr.outputs.pr == null }}
