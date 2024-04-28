@@ -3,11 +3,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## v1.2.0 - 2024-04-18
+## v1.2.0 - 2024-04-25
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.1.1...v1.2.0 by @obervinov in https://github.com/obervinov/_templates/pull/71
 #### 🚀 Features
 * [Add a workflow to automatically create and update the PR body](https://github.com/obervinov/_templates/issues/55)
+* [Close the milestone after the PR merger](https://github.com/obervinov/_templates/issues/56)
 #### 📚 Documentation
 * Updated all issue and pull request templates
 #### 🐛 Bug Fixes
