@@ -22,14 +22,18 @@ jobs:
           printf "Found PR with number: %s\n" "$pr"
           echo "pr=$pr" >> $GITHUB_OUTPUT
 
-      - name: PR does not exist
+      - name: Create PR if it does not exist
         id: check_pr
         run: |
-            echo "::group::PR does not exist"
-            echo "The PR does not exist for the current branch"
-            echo "Please create a PR for the current branch"
-            echo "::endgroup::"
-            exit 1
+          # Get the PR body from the CHANGELOG.md file
+          release_version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')
+          printf "Release version: %s\n" "$release_version"
+          release_body=$(sed -n "/## $release_version /,/## v/p" CHANGELOG.md | sed '$ d' | sed 's/\[.*\]//g' | sed 's/[(|)]//g' | perl -pe 's/\n/\\n/g')
+          printf "Release body:\n%s\n" "$release_body"
+          # Create new PR
+          pr_title=$(printf %s: <description> "${{ github.ref }} | sed 's/refs\/heads\///'| sed 's/\// /g'")
+          curl -q -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" -X POST -d "{\"title\": \"$pr_title\", \"head\": \"${{ github.ref }}\", \"base\": \"main\", \"body\": \"$release_body\"}" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls
+          printf "Created PR with number: %s\n" "$pr"
         if: ${{ steps.find_pr.outputs.pr == null }}
 
       - name: Update PR body
