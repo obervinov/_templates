@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.2.2 - 2024-04-28
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.1...v1.2.2 by @obervinov in https://github.com/obervinov/_templates/pull/76
+#### 🐛 Bug Fixes
+* Change image repository name in the pytest workflow `ghcr.io/obervinov/tools/vault:1.13.2` -> `ghcr.io/obervinov/images/vault:1.13.2`
+
+
 ## v1.2.1 - 2024-04-28
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.0...v1.2.1 by @obervinov in https://github.com/obervinov/_templates/pull/75
