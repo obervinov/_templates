@@ -12,7 +12,7 @@ jobs:
         poetry-version: ["1.7.1"]
     services:
       vault:
-        image: ghcr.io/obervinov/tools/vault:v1.13.2
+        image: ghcr.io/obervinov/images/vault:1.13.2
         ports:
           - 8200:8200
         env:

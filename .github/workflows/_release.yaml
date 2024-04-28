@@ -9,5 +9,5 @@ on:  # yamllint disable-line rule:truthy
 jobs:
   create-release:
     uses: obervinov/_templates/.github/workflows/release.yaml@main
-  milestone:
-    uses: obervinov/_templates/.github/workflows/milestone.yaml@main
+    # milestone:
+    #  uses: obervinov/_templates/.github/workflows/milestone.yaml@main
