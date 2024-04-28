@@ -13,3 +13,5 @@ jobs:
     uses: obervinov/_templates/.github/workflows/changelog.yaml@main
   create-release:
     uses: obervinov/_templates/.github/workflows/release.yaml@main
+  # milestone:
+  #   uses: obervinov/_templates/.github/workflows/milestone.yaml@main # will be uncommented after release
