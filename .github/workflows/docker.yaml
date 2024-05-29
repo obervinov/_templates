@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Determine tag
+      - name: Determine tag from GITHUB_REF
         run: |
           # Determine tag from GITHUB_REF
           echo "TAG=$(if [ -z \"$GITHUB_REF_NAME\" ]; then echo ${GITHUB_REF#refs/tags/}; else echo ${GITHUB_REF_NAME//\//- | awk -F'-' '{print $1}'; fi)" >> $GITHUB_ENV
