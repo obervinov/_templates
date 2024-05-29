@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+
+## v1.2.5 - 2024-05-29
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.4...v1.2.5 by @obervinov in https://github.com/obervinov/_templates/pull/82
+#### 🐛 Bug Fixes
+* [Docker workflow: fix error when to extract tag value](https://github.com/obervinov/_templates/pull/82)
+
+
 ## v1.2.4 - 2024-05-29
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.3...v1.2.4 by @obervinov in https://github.com/obervinov/_templates/pull/81

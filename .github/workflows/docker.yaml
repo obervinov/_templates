@@ -20,7 +20,7 @@ jobs:
       - name: Determine tag from GITHUB_REF
         run: |
           # Determine tag from GITHUB_REF
-          echo "TAG=$(if [ -z \"$GITHUB_REF_NAME\" ]; then echo ${GITHUB_REF#refs/tags/}; else echo ${GITHUB_REF_NAME//\//- | awk -F'-' '{print $1}'; fi)" >> $GITHUB_ENV
+          echo "TAG=$(echo ${GITHUB_REF_NAME} | awk -F'/' '{print $1}')" >> $GITHUB_ENV
 
       - name: Determine project name
         run: |
