@@ -20,7 +20,7 @@ jobs:
       - name: Determine tag
         run: |
           # Determine tag from GITHUB_REF
-          echo "TAG=$(if [ -z \"$GITHUB_REF_NAME\" ]; then echo ${GITHUB_REF#refs/tags/}; else echo ${GITHUB_REF_NAME//\//-}; fi)" >> $GITHUB_ENV
+          echo "TAG=$(if [ -z \"$GITHUB_REF_NAME\" ]; then echo ${GITHUB_REF#refs/tags/}; else echo ${GITHUB_REF_NAME//\//- | awk -F'-' '{print $1}'; fi)" >> $GITHUB_ENV
 
       - name: Determine project name
         run: |
@@ -33,14 +33,12 @@ jobs:
           echo "PROJECT_DESCRIPTION=$(curl -s https://api.github.com/repos/${{ github.repository }} | jq .description | sed 's/\"//g')" >> $GITHUB_ENV
 
       - name: Build an image from Dockerfile
-        if: ${{ env.TAG != 'main' }}
         run: |
           # Build image from Dockerfile
           docker build -t ghcr.io/${{ github.repository }}:${TAG} --build-arg="PROJECT_NAME=${{ github.event.repository.name }}" --build-arg="PROJECT_NAME=${PROJECT_NAME}" --build-arg="PROJECT_VERSION=${TAG}" --build-arg="PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}" .
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@d710430a6722f083d3b36b8339ff66b32f22ee55
-        if: ${{ env.TAG != 'main' }}
         with:
           image-ref: 'ghcr.io/${{ github.repository }}:${{ env.TAG }}'
           format: 'template'
@@ -50,57 +48,11 @@ jobs:
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
-        if: ${{ env.TAG != 'main' }}
         with:
           sarif_file: 'trivy-results.sarif'
 
       - name: Push docker image to ghcr
-        if: ${{ env.TAG != 'main' }}
         run: |
           # Push image to ghcr
           echo ${{ github.token }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker push ghcr.io/${{ github.repository_owner }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}:$TAG
-
-      - name: Create artifactes for main branch
-        if: ${{ env.TAG != 'main' }}
-        run: |
-          # Extract the Docker image digest
-          docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/${{ github.repository }}:${TAG} | awk -F@ '{print $2}' >> digest.txt
-          echo $TAG >> version.txt
-
-      - name: Save artifactes for main branch
-        if: ${{ env.TAG != 'main' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts
-          path: |
-            digest.txt
-            version.txt
-
-      # Workaround for fixing the https://github.com/orgs/community/discussions/27028
-      - name: Get artifactes for main branch
-        if: ${{ env.TAG == 'main' }}
-        uses: actions/download-artifact@v4
-        with:
-          name: artifacts
-          path: .
-
-      - name: Read artifactes for main branch
-        if: ${{ env.TAG == 'main' }}
-        run: |
-          # Read the Docker image digest
-          DIGEST=$(cat digest.txt)
-          VERSION=$(cat version.txt)
-          echo "DIGEST=$DIGEST" >> $GITHUB_ENV
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "RELEASE_VERSION=$(echo $VERSION | awk -F/ '{print $2}')" >> $GITHUB_ENV
-
-      - uses: shrink/actions-docker-registry-tag@v4
-        if: ${{ env.TAG == 'main' }}
-        with:
-          registry: ghcr.io
-          repository: ${{ github.repository }}
-          target: ${{ env.VERSION }}
-          tags: |
-            ${{ env.RELEASE_VERSION }}
-            latest
