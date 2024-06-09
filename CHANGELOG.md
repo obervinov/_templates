@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.2.6 - 2024-06-09
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.5...v1.2.6 by @obervinov in https://github.com/obervinov/_templates/pull/84
+#### 🚀 Features
+* [Add support for `PostgreSQL` in the pytest workflow](https://github.com/obervinov/_templates/pull/84)
+* [Bump trivy-action to `0.22.0` in the docker workflow](https://github.com/obervinov/_templates/pull/78)
+
+
 ## v1.2.5 - 2024-05-29
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.4...v1.2.5 by @obervinov in https://github.com/obervinov/_templates/pull/82
