@@ -38,7 +38,7 @@ jobs:
           docker build -t ghcr.io/${{ github.repository }}:${TAG} --build-arg="PROJECT_NAME=${{ github.event.repository.name }}" --build-arg="PROJECT_NAME=${PROJECT_NAME}" --build-arg="PROJECT_VERSION=${TAG}" --build-arg="PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}" .
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.22.0
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: 'ghcr.io/${{ github.repository }}:${{ env.TAG }}'
           format: 'template'
