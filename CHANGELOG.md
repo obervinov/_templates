@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.2.7 - 2024-08-12
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.6...v1.2.7 by @obervinov in https://github.com/obervinov/_templates/pull/84
+#### 🚀 Features
+* Bump trivy-action to `0.24.0` in the docker workflow
+* [Feature request: Docker workflow: auto create `latest` tag in PR](https://github.com/obervinov/_templates/issues/83)
+* Change the new image version detection selector from `LABEL org.opencontainers.image.version` to `ARG IMAGE_VERSION=` in `images` workflow  
+#### 💥 Breaking Changes
+* Change the new image version detection selector from `LABEL org.opencontainers.image.version` to `ARG IMAGE_VERSION=` in `images` workflow
+
+
 ## v1.2.6 - 2024-06-09
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.5...v1.2.6 by @obervinov in https://github.com/obervinov/_templates/pull/84
