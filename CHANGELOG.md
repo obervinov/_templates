@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.2.8 - 2024-08-14
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.7...v1.2.8 by @obervinov in https://github.com/obervinov/_templates/pull/85
+#### 🐛 Bug Fixes
+* hotfix: missconfig for docker build and trivy scan in the docker workflow
+
+
 ## v1.2.7 - 2024-08-12
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.6...v1.2.7 by @obervinov in https://github.com/obervinov/_templates/pull/84
