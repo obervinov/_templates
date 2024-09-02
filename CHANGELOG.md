@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 #### 🚀 Features
 * Bump poetry version to `1.8.3` in the python workflow
 * Bump vault-server image version to `1.17.2` in the python workflows
+* Add debug log level for the vault services in the python workflows
+* Add health check for the postgres service in the python workflows
 
 
 ## v1.2.8 - 2024-08-14
