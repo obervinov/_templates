@@ -3,6 +3,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v1.2.9 - 2024-09-05
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.8...v1.2.9 by @obervinov in https://github.com/obervinov/_templates/pull/90
+#### 🐛 Bug Fixes
+* Remove the matrix strategy from the python workflow
+#### 💥 Breaking Changes
+* Remove the matrix strategy from the python workflow (because it's causing conflicts with the github actions services)
+* Let's use only one version of python in the python workflow (`3.10`)
+#### 🚀 Features
+* Bump poetry version to `1.8.3` in the python workflow
+* Bump vault-server image version to `1.17.2` in the python workflows
+* Add debug log level for the vault services in the python workflows
+
+
 ## v1.2.8 - 2024-08-14
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.7...v1.2.8 by @obervinov in https://github.com/obervinov/_templates/pull/85
