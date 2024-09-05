@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## v1.2.9 - 2024-09-03
+## v1.2.9 - 2024-09-05
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.8...v1.2.9 by @obervinov in https://github.com/obervinov/_templates/pull/90
 #### 🐛 Bug Fixes
