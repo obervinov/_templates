@@ -7,7 +7,7 @@ jobs:
   verify-package-version-template:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v4
 
       - name: Extract version in pyproject.toml
         run: echo "version=v$(grep 'version = ".*"' pyproject.toml| awk '{print $3}' | sed 's/"//g')" >> $GITHUB_OUTPUT
@@ -42,12 +42,12 @@ jobs:
   verify-package-install-template:
     strategy:
       matrix:
-        # Matrix builds can conflict with the Github Actions Services (because services is single-run). Especially in pytest.
-        python-version: ["3.12"]
+        # Matrix builds can conflict with the Github Actions Services (because services is single-run)
+        python-version: ["3.10"]
         poetry-version: ["1.8.3"]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
@@ -65,8 +65,8 @@ jobs:
   build-poetry-dependencies-template:
     strategy:
       matrix:
-        # Matrix builds can conflict with the Github Actions Services (because services is single-run). Especially in pytest.
-        python-version: ["3.12"]
+        # Matrix builds can conflict with the Github Actions Services (because services is single-run)
+        python-version: ["3.10"]
         poetry-version: ["1.8.3"]
     runs-on: ubuntu-latest
     steps:
