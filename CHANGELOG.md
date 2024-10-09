@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 * [Merge all workflows into group files (details at the link)](https://github.com/obervinov/_templates/issues/72)
 #### 🚀 Features
 * [Feature request: automatic scheduled cleaning of untagged images in ghcr](https://github.com/obervinov/_templates/issues/86)
+* [Feature request: Add full SemVer support for python projects](https://github.com/obervinov/_templates/issues/92)
 
 
 

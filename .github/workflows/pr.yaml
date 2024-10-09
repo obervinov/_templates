@@ -10,11 +10,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Extract version in CHANGELOG.md
-        run: echo "version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_OUTPUT
+        run: echo "version=$(grep -E '## v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[0-9]+)?)?' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[0-9]+)?)?')" >> $GITHUB_OUTPUT
         id: changelogmdversion
 
       - name: Extract date in CHANGELOG.md
-        run: echo "date=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]')" >> $GITHUB_OUTPUT
+        run: echo "date=$(grep -E '## v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[0-9]+)?)?' CHANGELOG.md | head -1 | grep -Eo '[0-9]{4}-[0-9]{2}-[0-9]{2}')" >> $GITHUB_OUTPUT
         id: changelogmddate
 
       - name: Extract current date
