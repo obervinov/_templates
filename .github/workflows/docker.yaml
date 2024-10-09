@@ -77,7 +77,7 @@ jobs:
         uses: Chizkiyahu/delete-untagged-ghcr-action@v4
         with:
           token: ${{ secrets.PAT_GHCR_CLEANUP }}
-          package_name: 'pyinstabot-downloader'
+          package_name: ${{ github.event.repository.name }}
           untagged_only: true
           except_untagged_multiplatform: false
           owner_type: 'user'

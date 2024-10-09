@@ -10,9 +10,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 * [Workflow `milestone.yaml`: Milestone's auto-close doesn't work](https://github.com/obervinov/_templates/issues/79)
 #### 💥 Breaking Changes
 * [Feature request: Bump python version to `3.12`](https://github.com/obervinov/_templates/issues/93)
-* [Merge all workflows into group files](https://github.com/obervinov/_templates/issues/72)
+* [Merge all workflows into group files (details at the link)](https://github.com/obervinov/_templates/issues/72)
 #### 🚀 Features
-* 
+* [Feature request: automatic scheduled cleaning of untagged images in ghcr](https://github.com/obervinov/_templates/issues/86)
 
 
 
