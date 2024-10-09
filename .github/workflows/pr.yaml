@@ -1,49 +1,84 @@
 ---
-name: Create and update Pull Request template
+    name: Pull Request template
+    
+    on: [workflow_call]  # yamllint disable-line rule:truthy
+    
+    jobs:
+      pull-request-template:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v4
+    
+          - name: Extract version in CHANGELOG.md
+            run: echo "version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_OUTPUT
+            id: changelogmdversion
+    
+          - name: Extract date in CHANGELOG.md
+            run: echo "date=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]')" >> $GITHUB_OUTPUT
+            id: changelogmddate
+    
+          - name: Extract current date
+            run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+            id: currentdate
+    
+          - uses: actions-ecosystem/action-get-latest-tag@v1
+            id: tag
+    
+          - name: Old release version in changelog.md
+            run: |
+                echo "::group::Compare versions"
+                echo "The Git tag already matches the versions specified in changelog.md"
+                echo "Last tag version: ${{ steps.tag.outputs.tag }}, CHANGELOG.md version: ${{ steps.changelogmdversion.outputs.version }}"
+                echo "Please check the version in those file and increase it according to your update"
+                echo "::endgroup::"
+                exit 1
+            if: ${{ steps.changelogmdversion.outputs.version == steps.tag.outputs.tag }}
+    
+          - name: Old release date in changelog.md
+            run: |
+                echo "::group::Compare date"
+                echo "Release date to create and release date in the file CHANGELOG.md they differ."
+                echo "Current date: $(date +'%Y-%m-%d'), CHANGELOG.md date: ${{ steps.changelogmddate.outputs.date }}"
+                echo "Please update the date CHANGELOG.md."
+                echo "::endgroup::"
+                exit 1
+            if: ${{ steps.changelogmddate.outputs.date != steps.currentdate.outputs.date }}
 
-on: [workflow_call]  # yamllint disable-line rule:truthy
-
-jobs:
-  create-update-pr-template:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Find PR for current branch
-        id: find_pr
-        run: |
-          # Get all PRs
-          PRs=$(curl -q -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls)
-          # Get the PR for the current branch
-          current_branch=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
-          printf "Current branch: %s\n" "$current_branch"
-          pr=$(echo "$PRs" | sed '/"body":/,/"created_at":/d'| jq -r ".[] | select(.head.ref == \"$current_branch\") | .number")
-          printf "Found PR with number: %s\n" "$pr"
-          echo "pr=$pr" >> $GITHUB_OUTPUT
-
-      - name: Create PR if it does not exist
-        id: check_pr
-        run: |
-          # Get the PR body from the CHANGELOG.md file
-          release_version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')
-          printf "Release version: %s\n" "$release_version"
-          release_body=$(sed -n "/## $release_version /,/## v/p" CHANGELOG.md | sed '$ d' | sed 's/\[.*\]//g' | sed 's/[(|)]//g' | perl -pe 's/\n/\\n/g')
-          printf "Release body:\n%s\n" "$release_body"
-          # Create new PR
-          new_version=$(echo ${{ github.ref }} | sed 's/refs\/heads\///'| sed 's/\// /g'")
-          pr_title="Release $new_version"
-          curl -q -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" -X POST -d "{\"title\": \"$pr_title\", \"head\": \"${{ github.ref }}\", \"base\": \"main\", \"body\": \"$release_body\"}" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls
-          printf "Created PR with number: %s\n" "$pr"
-        if: ${{ steps.find_pr.outputs.pr == null }}
-
-      - name: Update PR body
-        run: |
-          # Get the PR body from the CHANGELOG.md file
-          release_version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')
-          printf "Release version: %s\n" "$release_version"
-          release_body=$(sed -n "/## $release_version /,/## v/p" CHANGELOG.md | sed '$ d' | sed 's/\[.*\]//g' | sed 's/[(|)]//g' | perl -pe 's/\n/\\n/g')
-          printf "Release body:\n%s\n" "$release_body"
-          # Update the PR body
-          curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" -X PATCH -d "{\"body\": \"$release_body\"}" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls/${{ steps.find_pr.outputs.pr }}
-        if: ${{ steps.find_pr.outputs.pr != null }}
+          - name: Find PR for current branch
+            id: find_pr
+            run: |
+              # Get all PRs
+              PRs=$(curl -q -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls)
+              # Get the PR for the current branch
+              current_branch=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
+              printf "Current branch: %s\n" "$current_branch"
+              pr=$(echo "$PRs" | sed '/"body":/,/"created_at":/d'| jq -r ".[] | select(.head.ref == \"$current_branch\") | .number")
+              printf "Found PR with number: %s\n" "$pr"
+              echo "pr=$pr" >> $GITHUB_OUTPUT
+    
+          - name: Create PR if it does not exist
+            id: check_pr
+            run: |
+              # Get the PR body from the CHANGELOG.md file
+              release_version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')
+              printf "Release version: %s\n" "$release_version"
+              release_body=$(sed -n "/## $release_version /,/## v/p" CHANGELOG.md | sed '$ d' | sed 's/\[.*\]//g' | sed 's/[(|)]//g' | perl -pe 's/\n/\\n/g')
+              printf "Release body:\n%s\n" "$release_body"
+              # Create new PR
+              new_version=$(echo ${{ github.ref }} | sed 's/refs\/heads\///'| sed 's/\// /g'")
+              pr_title="Release $new_version"
+              curl -q -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" -X POST -d "{\"title\": \"$pr_title\", \"head\": \"${{ github.ref }}\", \"base\": \"main\", \"body\": \"$release_body\"}" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls
+              printf "Created PR with number: %s\n" "$pr"
+            if: ${{ steps.find_pr.outputs.pr == null }}
+    
+          - name: Update PR body
+            run: |
+              # Get the PR body from the CHANGELOG.md file
+              release_version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')
+              printf "Release version: %s\n" "$release_version"
+              release_body=$(sed -n "/## $release_version /,/## v/p" CHANGELOG.md | sed '$ d' | sed 's/\[.*\]//g' | sed 's/[(|)]//g' | perl -pe 's/\n/\\n/g')
+              printf "Release body:\n%s\n" "$release_body"
+              # Update the PR body
+              curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" -X PATCH -d "{\"body\": \"$release_body\"}" https://api.github.com/repos/${{ github.repository_owner}}/${{ github.event.repository.name }}/pulls/${{ steps.find_pr.outputs.pr }}
+            if: ${{ steps.find_pr.outputs.pr != null }}
+    

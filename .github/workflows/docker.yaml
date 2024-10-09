@@ -17,10 +17,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Determine tag from GITHUB_REF
+      - name: Determine tag of the image from CHANGELOG.md
         run: |
-          # Determine tag from GITHUB_REF
-          echo "TAG=$(echo ${GITHUB_REF_NAME} | awk -F'/' '{print $2}')" >> $GITHUB_ENV
+          #  Determine tag of the image from CHANGELOG.md
+          echo "TAG=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_ENV
 
       - name: Determine project name
         run: |
@@ -35,10 +35,19 @@ jobs:
       - name: Build an image from Dockerfile
         run: |
           # Build image from Dockerfile
-          docker build -t ghcr.io/${{ github.repository }}:${TAG} --build-arg="PROJECT_NAME=${{ github.event.repository.name }}" --build-arg="PROJECT_NAME=${PROJECT_NAME}" --build-arg="PROJECT_VERSION=${TAG}" --build-arg="PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}" .
+          if [ "${GITHUB_REF_NAME}" == 'main' ]; then
+            image_tag=$TAG
+          else
+            image_tag=$TAG-dev
+          fi
+          docker build -t ghcr.io/${{ github.repository }}:${image_tag} \
+            --build-arg="PROJECT_NAME=${{ github.event.repository.name }}" \
+            --build-arg="PROJECT_NAME=${PROJECT_NAME}" \
+            --build-arg="PROJECT_VERSION=${TAG}" \
+            --build-arg="PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}" .
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.25.0
         with:
           image-ref: 'ghcr.io/${{ github.repository }}:${{ env.TAG }}'
           format: 'template'
@@ -51,10 +60,25 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
-      - name: Push docker image to ghcr
+      - name: Push docker image to GHCR
         run: |
-          # Push image to ghcr
+          # Push image to GitHub Container Registry
           echo ${{ github.token }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          docker push ghcr.io/${{ github.repository_owner }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}:$TAG
-          docker tag ghcr.io/${{ github.repository_owner }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}:$TAG ghcr.io/${{ github.repository_owner }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}:latest
-          docker push ghcr.io/${{ github.repository_owner }}/${GITHUB_REPOSITORY#${{ github.repository_owner }}/}:latest
+          if [ "${GITHUB_REF_NAME}" == 'main' ]; then
+            docker push ghcr.io/${{ github.repository }}:$TAG
+            docker tag ghcr.io/${{ github.repository }}:$TAG ghcr.io/${{ github.repository }}:latest
+            docker push ghcr.io/${{ github.repository }}:latest
+          else
+            docker push ghcr.io/${{ github.repository }}:$TAG-dev
+          fi
+
+      - name: Delete untagged images from GitHub Container Registry
+        continue-on-error: true
+        uses: Chizkiyahu/delete-untagged-ghcr-action@v4
+        with:
+          token: ${{ secrets.PAT_GHCR_CLEANUP }}
+          package_name: 'pyinstabot-downloader'
+          untagged_only: true
+          except_untagged_multiplatform: false
+          owner_type: 'user'
+        if: ${{ github.ref == 'refs/heads/main' }}

@@ -13,8 +13,8 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
   lint:
-    uses: obervinov/_templates/.github/workflows/yamllint.yaml@main
+    uses: obervinov/_templates/.github/workflows/yamllint.yaml@release/v2.0.0
   changelog:
-    uses: obervinov/_templates/.github/workflows/changelog.yaml@main
+    uses: obervinov/_templates/.github/workflows/changelog.yaml@release/v2.0.0
   pr:
-    uses: obervinov/_templates/.github/workflows/pr.yaml@main
+    uses: obervinov/_templates/.github/workflows/pr.yaml@release/v2.0.0
