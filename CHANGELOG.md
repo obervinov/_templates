@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v2.0.1 - 2024-10-10
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v2.0.0...v2.0.1 by @obervinov in https://github.com/obervinov/_templates/pull/95
+#### 🚀 Features
+* [Bump aquasecurity/trivy-action from 0.25.0 to 0.26.0 in /.github/workflows](https://github.com/obervinov/_templates/pull/95)
+
+
 ## v2.0.0 - 2024-10-10
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.9...v2.0.0 by @obervinov in https://github.com/obervinov/_templates/pull/94
