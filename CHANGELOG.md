@@ -3,11 +3,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## v2.0.0 - 2024-10-09
+## v2.0.0 - 2024-10-10
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.9...v2.0.0 by @obervinov in https://github.com/obervinov/_templates/pull/94
-#### 🐛 Bug Fixes
-* [Workflow `milestone.yaml`: Milestone's auto-close doesn't work](https://github.com/obervinov/_templates/issues/79)
 #### 💥 Breaking Changes
 * [Feature request: Bump python version to `3.12`](https://github.com/obervinov/_templates/issues/93)
 * [Merge all workflows into group files (details at the link)](https://github.com/obervinov/_templates/issues/72)
