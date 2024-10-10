@@ -16,7 +16,7 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.6
+          terraform_version: 1.9.2
 
       - name: Check cli
         run: |
@@ -45,7 +45,7 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.6
+          terraform_version: 1.9.2
 
       - name: Install Terraform docs
         run: |

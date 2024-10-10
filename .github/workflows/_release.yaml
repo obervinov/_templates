@@ -7,7 +7,5 @@ on:  # yamllint disable-line rule:truthy
     paths: ['.github/workflows/**']
 
 jobs:
-  create-release:
+  release:
     uses: obervinov/_templates/.github/workflows/release.yaml@main
-    # milestone:
-    #  uses: obervinov/_templates/.github/workflows/milestone.yaml@main

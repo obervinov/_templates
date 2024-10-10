@@ -3,6 +3,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v2.0.0 - 2024-10-10
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.9...v2.0.0 by @obervinov in https://github.com/obervinov/_templates/pull/94
+#### 💥 Breaking Changes
+* [Feature request: Bump python version to `3.12`](https://github.com/obervinov/_templates/issues/93)
+* [Merge all workflows into group files (details at the link)](https://github.com/obervinov/_templates/issues/72)
+* bump `terraform` version to `1.9.2`
+#### 🚀 Features
+* [Feature request: automatic scheduled cleaning of untagged images in ghcr](https://github.com/obervinov/_templates/issues/86)
+* [Feature request: Add full SemVer support for python projects](https://github.com/obervinov/_templates/issues/92)
+
+
 ## v1.2.9 - 2024-09-05
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v1.2.8...v1.2.9 by @obervinov in https://github.com/obervinov/_templates/pull/90

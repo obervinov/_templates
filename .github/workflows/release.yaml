@@ -1,10 +1,10 @@
 ---
-name: Create GitHub Release template
+name: Release template
 
 on: [workflow_call]  # yamllint disable-line rule:truthy
 
 jobs:
-  create-gh-release-template:
+  release-template:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

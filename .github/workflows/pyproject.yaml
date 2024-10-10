@@ -1,20 +1,68 @@
 ---
-name: Verify poetry package template
+name: Python CI template
 
 on: [workflow_call]  # yamllint disable-line rule:truthy
 
 jobs:
-  verify-package-version-template:
+  python-ci-template:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        # Matrix builds can conflict with the Github Actions Services (because services is single-run). Especially in pytest.
+        python-version: ["3.12"]
+        poetry-version: ["1.8.3"]
+
+    services:
+      vault:
+        image: ghcr.io/obervinov/images/vault:1.17.2
+        ports:
+          - 8200:8200
+        env:
+          VAULT_LOCAL_CONFIG: '{"backend": {"file": {"path": "/vault/data"}}, "default_lease_ttl": "1h", "max_lease_ttl": "720h", "listener": {"tcp": {"address": "0.0.0.0:8200", "tls_disable": "1"}}'
+          VAULT_API_ADDR: http://0.0.0.0:8200
+          VAULT_LOG_LEVEL: DEBUG
+        options: >-
+          --cap-add=IPC_LOCK
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v3
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+
+      - name: Install package dependencies and dependencies for testing
+        run: |
+          poetry install
+          poetry add --dev pylint flake8 pytest
+
+      - name: Analysing the code with PYLINT
+        run: poetry run pylint $(git ls-files '*.py')
+
+      - name: Analysing the code with FLAKE8
+        run: poetry run flake8 . --count --show-source --statistics
 
       - name: Extract version in pyproject.toml
         run: echo "version=v$(grep 'version = ".*"' pyproject.toml| awk '{print $3}' | sed 's/"//g')" >> $GITHUB_OUTPUT
         id: pyproject-version
 
       - name: Extract version in CHANGELOG.md
-        run: echo "version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_OUTPUT
+        run: echo "version=$(grep -E '## v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[0-9]+)?)?' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[0-9]+)?)?')" >> $GITHUB_OUTPUT
         id: changelog-version
 
       - uses: actions-ecosystem/action-get-latest-tag@v1
@@ -38,54 +86,10 @@ jobs:
             exit 1
         if: ${{ steps.pyproject-version.outputs.version != steps.changelog-version.outputs.version }}
 
-
-  verify-package-install-template:
-    strategy:
-      matrix:
-        # Matrix builds can conflict with the Github Actions Services (because services is single-run)
-        python-version: ["3.10"]
-        poetry-version: ["1.8.3"]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install poetry
-        uses: abatilo/actions-poetry@v3
-        with:
-          poetry-version: ${{ matrix.poetry-version }}
-
-      - name: Testing install module and all dependencies
-        run: poetry install
-
-
-  build-poetry-dependencies-template:
-    strategy:
-      matrix:
-        # Matrix builds can conflict with the Github Actions Services (because services is single-run)
-        python-version: ["3.10"]
-        poetry-version: ["1.8.3"]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@main
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install poetry
-        uses: abatilo/actions-poetry@v3
-        with:
-          poetry-version: ${{ matrix.poetry-version }}
-
-      - name: Testing install module and all dependencies
-        run: poetry install
+      - name: Testings with pytest
+        run: |
+          # Run tests with pytest
+          poetry run pytest
 
       - name: Commit & Push changes
         uses: actions-js/push@master
