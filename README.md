@@ -12,11 +12,10 @@
 This repository contains templates for creating standard repositories
 - **Workflow templates for GitHub Actions**
   - docker
-  - changelog.md
-  - readme.md
   - python
   - terraform
   - release
+  - pull-request
   - yaml
   - helm
 - **Icons for documentation other repositories**
