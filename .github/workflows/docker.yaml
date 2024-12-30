@@ -76,7 +76,7 @@ jobs:
 
       - name: Delete untagged images from GitHub Container Registry
         continue-on-error: true
-        uses: Chizkiyahu/delete-untagged-ghcr-action@v4
+        uses: Chizkiyahu/delete-untagged-ghcr-action@v6
         with:
           token: ${{ secrets.PAT_GHCR_CLEANUP }}
           package_name: ${{ github.event.repository.name }}
