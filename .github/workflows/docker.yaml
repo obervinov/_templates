@@ -56,7 +56,7 @@ jobs:
             --build-arg="PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}" \
             -t ghcr.io/${{ github.repository }}:${image_tag} \
             --push .
-          
+
           # Add latest tag to the image
           docker buildx imagetools create \
             ghcr.io/${{ github.repository }}:${image_tag} \
