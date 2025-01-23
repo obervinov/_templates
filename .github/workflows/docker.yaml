@@ -17,6 +17,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up QEMU (for Docker buildx)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Determine tag of the image from CHANGELOG.md
         run: |
           #  Determine tag of the image from CHANGELOG.md
@@ -32,22 +38,38 @@ jobs:
           # Determine project description from GITHUB_REPOSITORY
           echo "PROJECT_DESCRIPTION=$(curl -s https://api.github.com/repos/${{ github.repository }} | jq .description | sed 's/\"//g')" >> $GITHUB_ENV
 
-      - name: Build an image from Dockerfile
+      - name: Build and Push an image from Dockerfile (multi-arch)
         run: |
-          # Build image from Dockerfile
+          # Build and push Docker image to GitHub Container Registry
           if [ "${GITHUB_REF_NAME}" == 'main' ]; then
             image_tag=$TAG
           else
             image_tag=$TAG-dev
           fi
-          docker build -t ghcr.io/${{ github.repository }}:${image_tag} \
+
+          # Build multi-arch image with specific tags
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
             --build-arg="PROJECT_NAME=${{ github.event.repository.name }}" \
             --build-arg="PROJECT_NAME=${PROJECT_NAME}" \
             --build-arg="PROJECT_VERSION=${TAG}" \
-            --build-arg="PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}" .
+            --build-arg="PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}" \
+            -t ghcr.io/${{ github.repository }}:${image_tag} \
+            --push .
+          
+          # Add latest tag to the image
+          docker buildx imagetools create \
+            ghcr.io/${{ github.repository }}:${image_tag} \
+            --tag ghcr.io/${{ github.repository }}:latest
+
+      - name: Validate Docker image with multiple architectures
+        run: |
+          # Validate Docker image with multiple architectures
+          docker buildx imagetools inspect ghcr.io/your-repo/your-image:latest
+          docker run --rm --platform linux/arm64 ghcr.io/your-repo/your-image:latest uname -m
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.29.0
         with:
           image-ref: 'ghcr.io/${{ github.repository }}:${{ env.TAG }}'
           format: 'template'
@@ -76,7 +98,7 @@ jobs:
 
       - name: Delete untagged images from GitHub Container Registry
         continue-on-error: true
-        uses: Chizkiyahu/delete-untagged-ghcr-action@v4
+        uses: Chizkiyahu/delete-untagged-ghcr-action@v6
         with:
           token: ${{ secrets.PAT_GHCR_CLEANUP }}
           package_name: ${{ github.event.repository.name }}
