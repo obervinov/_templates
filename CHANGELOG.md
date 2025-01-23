@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v2.1.0 - 2025-01-23
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v2.0.2...v2.1.0 by @obervinov in https://github.com/obervinov/_templates/pull/103
+#### 🚀 Features
+* add support arm64 architecture for docker builds
+* bump dependency versions
+
+
 ## v2.0.2 - 2024-10-23
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v2.0.1...v2.0.2 by @obervinov in https://github.com/obervinov/_templates/pull/98
