@@ -26,7 +26,14 @@ jobs:
       - name: Determine tag of the image from CHANGELOG.md
         run: |
           #  Determine tag of the image from CHANGELOG.md
-          echo "TAG=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_ENV
+          VERSION=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')
+          # Determine type of the tag
+          if [ "${GITHUB_REF_NAME}" == 'main' ]; then
+            image_tag=$VERSION
+          else
+            image_tag=$VERSION-dev
+          fi
+          echo "IMAGE_TAG=$image_tag" >> $GITHUB_ENV
 
       - name: Determine project name
         run: |
@@ -40,38 +47,33 @@ jobs:
 
       - name: Build and Push an image from Dockerfile (multi-arch)
         run: |
-          # Build and push Docker image to GitHub Container Registry
-          if [ "${GITHUB_REF_NAME}" == 'main' ]; then
-            image_tag=$TAG
-          else
-            image_tag=$TAG-dev
-          fi
-
+          # Login to GitHub Container Registry
+          echo ${{ github.token }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           # Build multi-arch image with specific tags
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --build-arg="PROJECT_NAME=${{ github.event.repository.name }}" \
             --build-arg="PROJECT_NAME=${PROJECT_NAME}" \
-            --build-arg="PROJECT_VERSION=${TAG}" \
+            --build-arg="PROJECT_VERSION=${{ env.IMAGE_TAG }}" \
             --build-arg="PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}" \
-            -t ghcr.io/${{ github.repository }}:${image_tag} \
+            -t ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }} \
             --push .
 
           # Add latest tag to the image
           docker buildx imagetools create \
-            ghcr.io/${{ github.repository }}:${image_tag} \
+            ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }} \
             --tag ghcr.io/${{ github.repository }}:latest
 
       - name: Validate Docker image with multiple architectures
         run: |
           # Validate Docker image with multiple architectures
-          docker buildx imagetools inspect ghcr.io/your-repo/your-image:latest
-          docker run --rm --platform linux/arm64 ghcr.io/your-repo/your-image:latest uname -m
+          docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }}
+          docker run --rm --platform linux/arm64 ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }} uname -m
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.29.0
         with:
-          image-ref: 'ghcr.io/${{ github.repository }}:${{ env.TAG }}'
+          image-ref: 'ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }}'
           format: 'template'
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
@@ -83,18 +85,6 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
         continue-on-error: true
-
-      - name: Push docker image to GHCR
-        run: |
-          # Push image to GitHub Container Registry
-          echo ${{ github.token }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          if [ "${GITHUB_REF_NAME}" == 'main' ]; then
-            docker push ghcr.io/${{ github.repository }}:$TAG
-            docker tag ghcr.io/${{ github.repository }}:$TAG ghcr.io/${{ github.repository }}:latest
-            docker push ghcr.io/${{ github.repository }}:latest
-          else
-            docker push ghcr.io/${{ github.repository }}:$TAG-dev
-          fi
 
       - name: Delete untagged images from GitHub Container Registry
         continue-on-error: true
