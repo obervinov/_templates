@@ -29,9 +29,9 @@ jobs:
           echo "VERSION=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_ENV
           # Determine type of the tag
           if [ "${GITHUB_REF_NAME}" == 'main' ]; then
-            image_tag=$TAG
+            image_tag=$VERSION
           else
-            image_tag=$TAG-dev
+            image_tag=$VERSION-dev
           fi
           echo "IMAGE_TAG=$image_tag" >> $GITHUB_ENV
 
