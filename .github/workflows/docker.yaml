@@ -1,99 +1,98 @@
 ---
-  name: Build docker image template
-  
-  on: [workflow_call]  # yamllint disable-line rule:truthy
-  
-  jobs:
-    build-docker-image-template:
-      runs-on: ubuntu-latest
-      permissions:
-        actions: write
-        checks: read
-        contents: write
-        packages: write
-        security-events: write
-  
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-  
-        - name: Set up QEMU (for Docker buildx)
-          uses: docker/setup-qemu-action@v3
-  
-        - name: Set up Docker Buildx
-          uses: docker/setup-buildx-action@v3
-  
-        - name: Determine tag of the image from CHANGELOG.md
-          run: |
-            #  Determine tag of the image from CHANGELOG.md
-            echo "VERSION=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_ENV
-            # Determine type of the tag
-            if [ "${GITHUB_REF_NAME}" == 'main' ]; then
-              image_tag=$TAG
-            else
-              image_tag=$TAG-dev
-            fi
-            echo "IMAGE_TAG=$image_tag" >> $GITHUB_ENV
-  
-        - name: Determine project name
-          run: |
-            # Determine project name from GITHUB_REPOSITORY
-            echo "PROJECT_NAME=${GITHUB_REPOSITORY#${{ github.repository_owner }}/}" >> $GITHUB_ENV
-  
-        - name: Determine project description
-          run: |
-            # Determine project description from GITHUB_REPOSITORY
-            echo "PROJECT_DESCRIPTION=$(curl -s https://api.github.com/repos/${{ github.repository }} | jq .description | sed 's/\"//g')" >> $GITHUB_ENV
-  
-        - name: Build and Push an image from Dockerfile (multi-arch)
-          run: |
-            # Login to GitHub Container Registry
-            echo ${{ github.token }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            # Build multi-arch image with specific tags
-            docker buildx build \
-              --platform linux/amd64,linux/arm64 \
-              --build-arg="PROJECT_NAME=${{ github.event.repository.name }}" \
-              --build-arg="PROJECT_NAME=${PROJECT_NAME}" \
-              --build-arg="PROJECT_VERSION=${{ env.IMAGE_TAG }}" \
-              --build-arg="PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}" \
-              -t ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }} \
-              --push .
-  
-            # Add latest tag to the image
-            docker buildx imagetools create \
-              ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }} \
-              --tag ghcr.io/${{ github.repository }}:latest
-  
-        - name: Validate Docker image with multiple architectures
-          run: |
-            # Validate Docker image with multiple architectures
-            docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }}
-            docker run --rm --platform linux/arm64 ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }} uname -m
-  
-        - name: Run Trivy vulnerability scanner
-          uses: aquasecurity/trivy-action@0.29.0
-          with:
-            image-ref: 'ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }}'
-            format: 'template'
-            template: '@/contrib/sarif.tpl'
-            output: 'trivy-results.sarif'
-            severity: 'CRITICAL,HIGH'
-          continue-on-error: true
-  
-        - name: Upload Trivy scan results to GitHub Security tab
-          uses: github/codeql-action/upload-sarif@v3
-          with:
-            sarif_file: 'trivy-results.sarif'
-          continue-on-error: true
-  
-        - name: Delete untagged images from GitHub Container Registry
-          continue-on-error: true
-          uses: Chizkiyahu/delete-untagged-ghcr-action@v6
-          with:
-            token: ${{ secrets.PAT_GHCR_CLEANUP }}
-            package_name: ${{ github.event.repository.name }}
-            untagged_only: true
-            except_untagged_multiplatform: false
-            owner_type: 'user'
-          if: ${{ github.ref == 'refs/heads/main' }}
-  
+name: Build docker image template
+
+on: [workflow_call]  # yamllint disable-line rule:truthy
+
+jobs:
+  build-docker-image-template:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      checks: read
+      contents: write
+      packages: write
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU (for Docker buildx)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Determine tag of the image from CHANGELOG.md
+        run: |
+          #  Determine tag of the image from CHANGELOG.md
+          echo "VERSION=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_ENV
+          # Determine type of the tag
+          if [ "${GITHUB_REF_NAME}" == 'main' ]; then
+            image_tag=$TAG
+          else
+            image_tag=$TAG-dev
+          fi
+          echo "IMAGE_TAG=$image_tag" >> $GITHUB_ENV
+
+      - name: Determine project name
+        run: |
+          # Determine project name from GITHUB_REPOSITORY
+          echo "PROJECT_NAME=${GITHUB_REPOSITORY#${{ github.repository_owner }}/}" >> $GITHUB_ENV
+
+      - name: Determine project description
+        run: |
+          # Determine project description from GITHUB_REPOSITORY
+          echo "PROJECT_DESCRIPTION=$(curl -s https://api.github.com/repos/${{ github.repository }} | jq .description | sed 's/\"//g')" >> $GITHUB_ENV
+
+      - name: Build and Push an image from Dockerfile (multi-arch)
+        run: |
+          # Login to GitHub Container Registry
+          echo ${{ github.token }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          # Build multi-arch image with specific tags
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --build-arg="PROJECT_NAME=${{ github.event.repository.name }}" \
+            --build-arg="PROJECT_NAME=${PROJECT_NAME}" \
+            --build-arg="PROJECT_VERSION=${{ env.IMAGE_TAG }}" \
+            --build-arg="PROJECT_DESCRIPTION=${PROJECT_DESCRIPTION}" \
+            -t ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }} \
+            --push .
+
+          # Add latest tag to the image
+          docker buildx imagetools create \
+            ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }} \
+            --tag ghcr.io/${{ github.repository }}:latest
+
+      - name: Validate Docker image with multiple architectures
+        run: |
+          # Validate Docker image with multiple architectures
+          docker buildx imagetools inspect ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }}
+          docker run --rm --platform linux/arm64 ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }} uname -m
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.29.0
+        with:
+          image-ref: 'ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }}'
+          format: 'template'
+          template: '@/contrib/sarif.tpl'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+        continue-on-error: true
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+
+      - name: Delete untagged images from GitHub Container Registry
+        continue-on-error: true
+        uses: Chizkiyahu/delete-untagged-ghcr-action@v6
+        with:
+          token: ${{ secrets.PAT_GHCR_CLEANUP }}
+          package_name: ${{ github.event.repository.name }}
+          untagged_only: true
+          except_untagged_multiplatform: false
+          owner_type: 'user'
+        if: ${{ github.ref == 'refs/heads/main' }}
