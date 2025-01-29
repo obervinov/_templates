@@ -26,7 +26,7 @@ jobs:
       - name: Determine tag of the image from CHANGELOG.md
         run: |
           #  Determine tag of the image from CHANGELOG.md
-          echo "VERSION=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_ENV
+          VERSION=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')
           # Determine type of the tag
           if [ "${GITHUB_REF_NAME}" == 'main' ]; then
             image_tag=$VERSION
