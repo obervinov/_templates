@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v2.1.1 - 2025-01-29
+### What's Changed
+**Full Changelog**: https://github.com/obervinov/_templates/compare/v2.1.0...v2.1.1 by @obervinov in https://github.com/obervinov/_templates/pull/104
+#### 🐛 Bug Fixes
+* fix docker workflow mistakes
+
+
 ## v2.1.0 - 2025-01-23
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v2.0.2...v2.1.0 by @obervinov in https://github.com/obervinov/_templates/pull/103
