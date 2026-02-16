@@ -71,7 +71,7 @@ jobs:
           docker run --rm --platform linux/arm64 ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }} uname -m
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.29.0
+        uses: aquasecurity/trivy-action@0.34.0
         with:
           image-ref: 'ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }}'
           format: 'template'
