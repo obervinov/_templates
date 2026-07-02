@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v2.2.0 - 2026-07-02
+### What's Changed
+#### 🚀 Features
+* Add `golang.yaml` reusable workflow: gofmt, go vet, golangci-lint, `go test -race -cover` and build for Go projects.
+
 ## v2.1.1 - 2025-01-29
 ### What's Changed
 **Full Changelog**: https://github.com/obervinov/_templates/compare/v2.1.0...v2.1.1 by @obervinov in https://github.com/obervinov/_templates/pull/104

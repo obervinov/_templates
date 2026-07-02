@@ -1,0 +1,38 @@
+---
+name: Golang CI template
+
+on: [workflow_call]  # yamllint disable-line rule:truthy
+
+jobs:
+  golang-ci-template:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache: true
+
+      - name: Check formatting with gofmt
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "::error::These files are not gofmt-formatted, run 'gofmt -w .':"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Analysing the code with go vet
+        run: go vet ./...
+
+      - name: Analysing the code with golangci-lint
+        uses: golangci/golangci-lint-action@v6
+
+      - name: Testing with go test
+        run: go test ./... -race -cover
+
+      - name: Building
+        run: go build ./...
