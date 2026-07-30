@@ -31,7 +31,7 @@ jobs:
       - name: Analysing the code with golangci-lint
         uses: golangci/golangci-lint-action@v8
         with:
-          version: latest
+          version: v2.12.2
 
       - name: Testing with go test
         run: go test ./... -race -cover
