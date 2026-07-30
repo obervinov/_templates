@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v2.2.1 - 2026-07-30
+### What's Changed
+#### 🐛 Bug Fixes
+* Bump `golang.yaml` to `golangci-lint-action@v8` pinned to golangci-lint `v2.12.2`. The v6 action pinned an older golangci-lint built with an older Go that refuses to lint Go 1.25 modules (`the Go language version used to build golangci-lint is lower than the targeted Go version`); v2.12.2 is built with a current Go and lints them correctly.
+
 ## v2.2.0 - 2026-07-02
 ### What's Changed
 #### 🚀 Features
