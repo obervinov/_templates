@@ -13,6 +13,7 @@ This repository contains templates for creating standard repositories
 - **Workflow templates for GitHub Actions**
   - docker
   - python
+  - go
   - terraform
   - release
   - pull-request
