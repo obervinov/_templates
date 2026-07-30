@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up QEMU (for Docker buildx)
         uses: docker/setup-qemu-action@v3
@@ -71,7 +71,7 @@ jobs:
           docker run --rm --platform linux/arm64 ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }} uname -m
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.29.0
+        uses: aquasecurity/trivy-action@0.36.0
         with:
           image-ref: 'ghcr.io/${{ github.repository }}:${{ env.IMAGE_TAG }}'
           format: 'template'
@@ -81,7 +81,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: 'trivy-results.sarif'
         continue-on-error: true

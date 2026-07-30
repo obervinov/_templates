@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v2.2.2 - 2026-07-30
+### What's Changed
+#### 🔒 Security
+* Bump `aquasecurity/trivy-action` to `0.36.0`, fixing the critical supply-chain advisory affecting versions `< 0.35.0`.
+#### ⬆️ Dependencies
+* Bump `actions/checkout` to `v6`, `actions/setup-python` to `v6`, and `github/codeql-action` to `v4`.
+#### 🐛 Bug Fixes
+* Fix a stray double quote in `pr.yaml`'s "create pull request" step that broke the shell (`unexpected EOF`) when the branch had no PR yet.
+
 ## v2.2.1 - 2026-07-30
 ### What's Changed
 #### 🐛 Bug Fixes
