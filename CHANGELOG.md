@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v2.2.2 - 2026-07-30
+### What's Changed
+#### 🔒 Security
+* Bump `aquasecurity/trivy-action` to `0.36.0`, fixing the critical supply-chain advisory affecting versions `< 0.35.0`.
+#### ⬆️ Dependencies
+* Bump `actions/checkout` to `v6`, `actions/setup-python` to `v6`, and `github/codeql-action` to `v4`.
+
 ## v2.2.1 - 2026-07-30
 ### What's Changed
 #### 🐛 Bug Fixes
