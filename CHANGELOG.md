@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v2.2.3 - 2026-07-31
+### What's Changed
+#### 🐛 Bug Fixes
+* Fix `aquasecurity/trivy-action` reference to `v0.36.0` (the tags are `v`-prefixed; `0.36.0` does not resolve).
+
 ## v2.2.2 - 2026-07-30
 ### What's Changed
 #### 🔒 Security
