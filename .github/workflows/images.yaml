@@ -1,74 +1,666 @@
 ---
-name: Build Docker and Packer images template
+# Supply-chain pipeline for repositories that keep one image per directory.
+#
+# Build once for every requested platform, push the same index to one or more
+# registries, execute the emulated arm64 result, sign the index with keyless
+# cosign, attach SBOM + provenance attestations and scan every child manifest
+# with Trivy.
+#
+# Third-party actions are pinned to immutable commit SHAs: a workflow whose
+# purpose is provenance cannot itself depend on mutable tags.
+name: Build, sign and scan images template
 
-on: [workflow_call]  # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      runs-on:
+        description: "Runner label the jobs execute on. A self-hosted label works here too."
+        required: false
+        type: string
+        default: ubuntu-latest
+      images-path:
+        description: "Directory holding one sub-directory per image."
+        required: false
+        type: string
+        default: docker
+      dockerfile:
+        description: "Dockerfile name inside each image directory."
+        required: false
+        type: string
+        default: Dockerfile
+      version-arg:
+        description: "Dockerfile ARG that carries the image version, used as the image tag."
+        required: false
+        type: string
+        default: IMAGE_VERSION
+      image:
+        description: "Build only this image (directory name or path). Empty = every changed image."
+        required: false
+        type: string
+        default: ''
+      exclude:
+        description: "Image directories to never build, separated by commas or spaces."
+        required: false
+        type: string
+        default: ''
+      build-all:
+        description: "Ignore change detection and build every discovered image."
+        required: false
+        type: boolean
+        default: false
+      platforms:
+        description: "Platforms passed to buildx. SARIF is uploaded for linux/amd64 and linux/arm64."
+        required: false
+        type: string
+        default: linux/amd64,linux/arm64
+      registries:
+        description: "Registry hosts to push to, separated by commas or newlines. The first one is primary."
+        required: false
+        type: string
+        default: ghcr.io
+      namespace:
+        description: "Path between the registry host and the image name. Defaults to owner/repo."
+        required: false
+        type: string
+        default: ''
+      publish:
+        description: "Allow publishing. Even when true, only the default branch and workflow_dispatch publish."
+        required: false
+        type: boolean
+        default: true
+      latest-tag:
+        description: "Also point <image>:latest at the published index."
+        required: false
+        type: boolean
+        default: true
+      attestations:
+        description: "Attach an SBOM and a max-mode provenance attestation to the pushed index."
+        required: false
+        type: boolean
+        default: true
+      sign:
+        description: "Sign the published index with keyless cosign."
+        required: false
+        type: boolean
+        default: true
+      smoke-test:
+        description: "Execute the published image on every built platform before signing it."
+        required: false
+        type: boolean
+        default: true
+      smoke-test-entrypoint:
+        description: "Entrypoint override for the smoke test. Set empty to keep the image entrypoint."
+        required: false
+        type: string
+        default: uname
+      smoke-test-args:
+        description: "Arguments for the smoke test entrypoint."
+        required: false
+        type: string
+        default: '-m'
+      trivy-severity:
+        description: "Severities Trivy reports."
+        required: false
+        type: string
+        default: HIGH,CRITICAL
+      trivy-ignore-unfixed:
+        description: "Report only vulnerabilities that have an upstream fix."
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      registry-credentials:
+        description: >-
+          Credentials for the registries, one line per host: "<host> <username> <password>".
+          ghcr.io needs no entry, the job's own GITHUB_TOKEN is used for it.
+          A host with no line and no fallback is skipped with a warning unless it is the primary.
+        required: false
+    outputs:
+      images:
+        description: "JSON array of the image directories this run selected."
+        value: ${{ jobs.prepare-images-matrix.outputs.images }}
+      count:
+        description: "Number of selected image directories."
+        value: ${{ jobs.prepare-images-matrix.outputs.count }}
+      published:
+        description: "'true' when this run published, signed and scanned. 'false' when it was a build-only check."
+        value: ${{ jobs.prepare-images-matrix.outputs.publish }}
 
 jobs:
-  build-docker-images-template:
-    runs-on: ubuntu-latest
+  # One runner decides what to build. The previous shape started a runner per
+  # image, cloned the repository and installed QEMU on each, and all but the
+  # changed one then did nothing.
+  prepare-images-matrix:
+    runs-on: ${{ inputs.runs-on }}
     permissions:
-      actions: write
-      checks: read
-      contents: write
-      packages: write
-      security-events: write
+      contents: read
+    outputs:
+      images: ${{ steps.select.outputs.images }}
+      count: ${{ steps.select.outputs.count }}
+      publish: ${{ steps.select.outputs.publish }}
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
+        with:
+          fetch-depth: 0
+
+      - name: Select images to build
+        id: select
+        env:
+          IMAGES_PATH: ${{ inputs.images-path }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          ONLY_IMAGE: ${{ inputs.image }}
+          EXCLUDE: ${{ inputs.exclude }}
+          BUILD_ALL: ${{ inputs.build-all }}
+          PUBLISH_INPUT: ${{ inputs.publish }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          EVENT_BEFORE: ${{ github.event.before }}
+        run: |
+          set -eu
+
+          # Accept commas or whitespace as separators in the opt-out list.
+          excluded=$(printf '%s' "${EXCLUDE}" | tr ',' ' ')
+
+          # github.event.before is all-zeros on the first push of a branch and
+          # points at a discarded commit after a force-push. `git diff` then
+          # exits non-zero, which is indistinguishable from "this image
+          # changed" — so every force-push rebuilt every image, arm64
+          # emulation included. Fall back to the fork point from the default
+          # branch, which is what "changed on this branch" actually means.
+          base=''
+          if [ "${BUILD_ALL}" != 'true' ] && [ -z "${ONLY_IMAGE}" ]; then
+            base="${EVENT_BEFORE}"
+            if [ -z "${base}" ] || ! git cat-file -e "${base}^{commit}" 2>/dev/null; then
+              git fetch --no-tags --quiet origin "${DEFAULT_BRANCH}" || true
+              base=$(git merge-base "origin/${DEFAULT_BRANCH}" "${GITHUB_SHA}" 2>/dev/null || true)
+              echo "github.event.before (${EVENT_BEFORE}) is unreachable, comparing against ${base:-nothing} instead."
+            fi
+          fi
+
+          selected="${RUNNER_TEMP}/selected-images.txt"
+          : > "${selected}"
+
+          for dir in "${IMAGES_PATH}"/*; do
+            [ -d "${dir}" ] || continue
+            [ -f "${dir}/${DOCKERFILE}" ] || continue
+
+            name=$(basename "${dir}")
+
+            skip=''
+            for entry in ${excluded}; do
+              if [ "${entry}" = "${name}" ] || [ "${entry}" = "${dir}" ]; then
+                skip='yes'
+              fi
+            done
+            if [ -n "${skip}" ]; then
+              echo "${dir}: excluded by the 'exclude' input."
+              continue
+            fi
+
+            if [ -n "${ONLY_IMAGE}" ]; then
+              if [ "${ONLY_IMAGE}" = "${name}" ] || [ "${ONLY_IMAGE}" = "${dir}" ]; then
+                echo "${dir}: requested explicitly."
+                echo "${dir}" >> "${selected}"
+              fi
+              continue
+            fi
+
+            if [ "${BUILD_ALL}" = 'true' ]; then
+              echo "${dir}: build-all requested."
+              echo "${dir}" >> "${selected}"
+            elif [ -z "${base}" ] || [ "${base}" = "${GITHUB_SHA}" ]; then
+              # No usable comparison point. Build rather than risk skipping a
+              # change: a needless build costs runner minutes, a skipped one
+              # ships a stale image.
+              echo "${dir}: cannot determine what changed, building."
+              echo "${dir}" >> "${selected}"
+            elif git diff --quiet "${base}" "${GITHUB_SHA}" -- "${dir}"; then
+              echo "${dir}: unchanged since ${base}, skipping."
+            else
+              # The whole directory is the build context, so anything in it —
+              # not only the Dockerfile — can change the resulting image.
+              echo "${dir}: changed since ${base}, building."
+              echo "${dir}" >> "${selected}"
+            fi
+          done
+
+          images=$(jq -R -s -c 'split("\n") | map(select(length > 0))' < "${selected}")
+          count=$(printf '%s' "${images}" | jq 'length')
+
+          if [ -n "${ONLY_IMAGE}" ] && [ "${count}" = '0' ]; then
+            echo "::error::no image directory matching '${ONLY_IMAGE}' under ${IMAGES_PATH}"
+            exit 1
+          fi
+
+          # The default branch publishes. A manual dispatch publishes too,
+          # since re-publishing one image is the only reason to trigger it by
+          # hand. Everything else is a build-only check.
+          publish='false'
+          if [ "${PUBLISH_INPUT}" = 'true' ] &&
+             { [ "${GITHUB_REF_NAME}" = "${DEFAULT_BRANCH}" ] || [ "${GITHUB_EVENT_NAME}" = 'workflow_dispatch' ]; }; then
+            publish='true'
+          fi
+
+          echo "selected ${count} image(s): ${images}"
+          echo "publishing: ${publish}"
+
+          {
+            echo "images=${images}"
+            echo "count=${count}"
+            echo "publish=${publish}"
+          } >> "${GITHUB_OUTPUT}"
+
+  # Build-only check for everything that does not publish. The publish-gated
+  # work lives in its own job below rather than behind a step-level condition
+  # repeated ten times, where a new step that copies only half the condition
+  # would silently run on pull requests.
+  verify-images-template:
+    needs: prepare-images-matrix
+    if: needs.prepare-images-matrix.outputs.count != '0' && needs.prepare-images-matrix.outputs.publish != 'true'
+    runs-on: ${{ inputs.runs-on }}
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJSON(needs.prepare-images-matrix.outputs.images) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
 
       - name: Set up QEMU (for Docker buildx)
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8  # v4.2.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c  # v4.2.0
 
-      - name: Find Dockerfiles
-        id: find_dockerfiles
+      - name: Resolve image name and tag
+        id: meta
+        env:
+          IMAGE_DIR: ${{ matrix.directory }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          VERSION_ARG: ${{ inputs.version-arg }}
         run: |
-          # Find all Dockerfiles in the repository
-          echo "list=$(find . -type f -name Dockerfile | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          set -eu
+          image_name=$(basename "${IMAGE_DIR}")
+          image_tag=$(grep -i "ARG ${VERSION_ARG}=" "${IMAGE_DIR}/${DOCKERFILE}" | head -n 1 | awk -F = '{print $2}' | tr -d "\"'")
+          if [ -z "${image_tag}" ]; then
+            echo "::error file=${IMAGE_DIR}/${DOCKERFILE}::no 'ARG ${VERSION_ARG}=<version>' line found, refusing to build an untagged image"
+            exit 1
+          fi
+          {
+            echo "image_name=${image_name}"
+            echo "image_tag=${image_tag}"
+          } >> "${GITHUB_OUTPUT}"
 
-      - name: Build and Push Docker images
+      # A multi-platform result cannot be --load-ed into the local docker
+      # store, so an unpublished build can only be a cache-only check.
+      - name: Build image
+        env:
+          IMAGE_DIR: ${{ matrix.directory }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          PLATFORMS: ${{ inputs.platforms }}
+          PROJECT_NAME: ${{ github.event.repository.name }}
         run: |
-          # Build and push Docker images to GitHub Container Registry
-          echo ${{ github.token }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          for dockerfile in ${{ steps.find_dockerfiles.outputs.list }}; do
-            image_name=$(echo $dockerfile | awk -F '/' '{print $3}')
-            image_tag=$(cat $dockerfile | grep -i 'ARG IMAGE_VERSION='| awk -F = '{print $2}')
-            # Build multi-arch image with specific tags
-            docker buildx build \
-              --platform linux/amd64,linux/arm64 \
-              --build-arg="PROJECT_NAME=${{ github.event.repository.name }}" \
-              -t ghcr.io/${{ github.repository }}/${image_name}:${image_tag} \
-              $(dirname $dockerfile) \
-              --push
-            # Add latest tag to the image
-            docker buildx imagetools create \
-              ghcr.io/${{ github.repository }}/${image_name}:${image_tag} \
-              --tag ghcr.io/${{ github.repository }}/${image_name}:latest
+          set -eu
+          docker buildx build \
+            --platform "${PLATFORMS}" \
+            --build-arg "PROJECT_NAME=${PROJECT_NAME}" \
+            --file "${IMAGE_DIR}/${DOCKERFILE}" \
+            --output=type=cacheonly \
+            "${IMAGE_DIR}"
+
+  # Publishing path: push, execute, sign, attest and scan.
+  publish-images-template:
+    needs: prepare-images-matrix
+    if: needs.prepare-images-matrix.outputs.count != '0' && needs.prepare-images-matrix.outputs.publish == 'true'
+    runs-on: ${{ inputs.runs-on }}
+    permissions:
+      contents: read
+      packages: write
+      # Keyless cosign signing exchanges this for an OIDC token from
+      # token.actions.githubusercontent.com — there is no key to store or rotate.
+      id-token: write
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJSON(needs.prepare-images-matrix.outputs.images) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
+
+      - name: Set up QEMU (for Docker buildx)
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8  # v4.2.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c  # v4.2.0
+
+      - name: Resolve image name and tag
+        id: meta
+        env:
+          IMAGE_DIR: ${{ matrix.directory }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          VERSION_ARG: ${{ inputs.version-arg }}
+        run: |
+          set -eu
+          image_name=$(basename "${IMAGE_DIR}")
+          image_tag=$(grep -i "ARG ${VERSION_ARG}=" "${IMAGE_DIR}/${DOCKERFILE}" | head -n 1 | awk -F = '{print $2}' | tr -d "\"'")
+          if [ -z "${image_tag}" ]; then
+            echo "::error file=${IMAGE_DIR}/${DOCKERFILE}::no 'ARG ${VERSION_ARG}=<version>' line found, refusing to build an untagged image"
+            exit 1
+          fi
+          {
+            echo "image_name=${image_name}"
+            echo "image_tag=${image_tag}"
+          } >> "${GITHUB_OUTPUT}"
+
+      # The first registry in the list is the primary one: it fails the run.
+      # Every other target is advisory — an unreachable homelab registry must
+      # not block a release to the primary one.
+      - name: Log in to the target registries
+        id: registries
+        env:
+          REGISTRIES: ${{ inputs.registries }}
+          REGISTRY_CREDENTIALS: ${{ secrets.registry-credentials }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+
+          # GitHub Actions secret names are static, so a separate secret pair
+          # per registry cannot be declared for an arbitrary number of targets.
+          # One credentials secret holding a line per host keeps the registry
+          # list configurable while keeping the credentials themselves apart.
+          creds="${RUNNER_TEMP}/registry-credentials"
+          umask 077
+          printf '%s\n' "${REGISTRY_CREDENTIALS}" > "${creds}"
+
+          targets="${RUNNER_TEMP}/registry-targets.txt"
+          : > "${targets}"
+          primary=''
+          first='yes'
+
+          for registry in $(printf '%s' "${REGISTRIES}" | tr ',' ' '); do
+            username=''
+            password=''
+            while read -r host user secret; do
+              if [ "${host}" = "${registry}" ]; then
+                username="${user}"
+                password="${secret}"
+              fi
+            done < "${creds}"
+
+            # ghcr.io needs no entry: the job's own GITHUB_TOKEN already
+            # carries packages:write for this repository.
+            if [ -z "${password}" ] && [ "${registry}" = 'ghcr.io' ]; then
+              username="${GITHUB_ACTOR}"
+              password="${GITHUB_TOKEN}"
+            fi
+
+            if [ -z "${password}" ]; then
+              if [ "${first}" = 'yes' ]; then
+                echo "::error::no credentials for the primary registry ${registry}"
+                exit 1
+              fi
+              echo "::warning::no credentials for ${registry}, skipping this target"
+              first='no'
+              continue
+            fi
+
+            # Actions masks a multi-line secret line by line; nothing masks a
+            # field once it has been split back out here.
+            echo "::add-mask::${password}"
+
+            if printf '%s' "${password}" | docker login "${registry}" --username "${username}" --password-stdin; then
+              echo "${registry}" >> "${targets}"
+              if [ "${first}" = 'yes' ]; then
+                primary="${registry}"
+                # Trivy pulls by digest from the primary registry and needs the
+                # same credentials. They stay inside this job and are masked.
+                {
+                  echo "TRIVY_USERNAME=${username}"
+                  echo "TRIVY_PASSWORD=${password}"
+                } >> "${GITHUB_ENV}"
+              fi
+            else
+              if [ "${first}" = 'yes' ]; then
+                echo "::error::login to the primary registry ${registry} failed"
+                exit 1
+              fi
+              echo "::warning::login to ${registry} failed, skipping this target"
+            fi
+            first='no'
           done
 
-      - name: Install Trivy
-        run: |
-          # Install Trivy
-          sudo apt-get install wget apt-transport-https gnupg lsb-release
-          sudo wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-          sudo echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
-          sudo apt-get update
-          sudo apt-get install trivy
+          rm -f "${creds}"
 
-      - name: Scan Docker images with Trivy
+          list=$(tr '\n' ' ' < "${targets}")
+          echo "publishing to: ${list}"
+          {
+            echo "targets=${list}"
+            echo "primary=${primary}"
+          } >> "${GITHUB_OUTPUT}"
+
+      # One build for every registry. Multiple -t names on a single --push make
+      # buildkit upload the same index to each of them, so arm64 emulation runs
+      # once no matter how many targets there are.
+      - name: Build and push image
+        id: build
+        env:
+          IMAGE_DIR: ${{ matrix.directory }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          PLATFORMS: ${{ inputs.platforms }}
+          PROJECT_NAME: ${{ github.event.repository.name }}
+          IMAGE_NAME: ${{ steps.meta.outputs.image_name }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          NAMESPACE: ${{ inputs.namespace }}
+          TARGETS: ${{ steps.registries.outputs.targets }}
+          ATTESTATIONS: ${{ inputs.attestations }}
+          SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}
         run: |
-          # Scan Docker images with Trivy
-          mkdir results
-          for dockerfile in ${{ steps.find_dockerfiles.outputs.list }}; do
-            image_name=$(echo $dockerfile | awk -F '/' '{print $3}')
-            image_tag=$(cat $dockerfile | grep -i 'ARG IMAGE_VERSION='| awk -F = '{print $2}')
-            trivy image --exit-code 0 --severity HIGH,CRITICAL ghcr.io/${{ github.repository }}/${image_name}:${image_tag} -f sarif -o results/trivy-results-${image_name}-${image_tag}.sarif
+          set -eu
+          namespace="${NAMESPACE:-${GITHUB_REPOSITORY}}"
+
+          set -- --push --metadata-file "${RUNNER_TEMP}/metadata.json"
+          if [ "${ATTESTATIONS}" = 'true' ]; then
+            # buildx can only attach provenance and SBOM attestations to a
+            # registry export, so these flags live on the push path only.
+            # They become extra manifests inside the index, which means every
+            # -t target receives them along with the index itself.
+            set -- "$@" --sbom=true --provenance=mode=max
+          fi
+          for registry in ${TARGETS}; do
+            set -- "$@" -t "${registry}/${namespace}/${IMAGE_NAME}:${IMAGE_TAG}"
           done
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
+          docker buildx build \
+            --platform "${PLATFORMS}" \
+            --build-arg "PROJECT_NAME=${PROJECT_NAME}" \
+            --label "org.opencontainers.image.source=${SOURCE_URL}" \
+            --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+            --label "org.opencontainers.image.version=${IMAGE_TAG}" \
+            --file "${IMAGE_DIR}/${DOCKERFILE}" \
+            "$@" \
+            "${IMAGE_DIR}"
+
+          echo "namespace=${namespace}" >> "${GITHUB_OUTPUT}"
+
+      - name: Tag the published index as latest
+        if: inputs.latest-tag
+        env:
+          IMAGE_NAME: ${{ steps.meta.outputs.image_name }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          NAMESPACE: ${{ steps.build.outputs.namespace }}
+          TARGETS: ${{ steps.registries.outputs.targets }}
+          PRIMARY: ${{ steps.registries.outputs.primary }}
+        run: |
+          set -eu
+          for registry in ${TARGETS}; do
+            repo="${registry}/${NAMESPACE}/${IMAGE_NAME}"
+            if docker buildx imagetools create "${repo}:${IMAGE_TAG}" --tag "${repo}:latest"; then
+              echo "tagged ${repo}:latest"
+            elif [ "${registry}" = "${PRIMARY}" ]; then
+              echo "::error::could not move ${repo}:latest"
+              exit 1
+            else
+              echo "::warning::could not move ${repo}:latest, continuing"
+            fi
+          done
+
+      # Signing, scanning and the smoke test all address a digest, never a tag:
+      # a tag can be moved. The index digest is content-addressed, so the same
+      # value identifies the image in every registry it was pushed to.
+      - name: Resolve manifest digests
+        id: digests
+        env:
+          IMAGE_NAME: ${{ steps.meta.outputs.image_name }}
+          IMAGE_TAG: ${{ steps.meta.outputs.image_tag }}
+          NAMESPACE: ${{ steps.build.outputs.namespace }}
+          PLATFORMS: ${{ inputs.platforms }}
+          PRIMARY: ${{ steps.registries.outputs.primary }}
+        run: |
+          set -eu
+          index=$(jq -r '."containerimage.digest"' "${RUNNER_TEMP}/metadata.json")
+          echo "index digest: ${index}"
+
+          repo="${PRIMARY}/${NAMESPACE}/${IMAGE_NAME}"
+          raw=$(docker buildx imagetools inspect "${repo}:${IMAGE_TAG}" --raw)
+
+          {
+            echo "index=${index}"
+            echo "repo=${repo}"
+          } >> "${GITHUB_OUTPUT}"
+
+          for platform in $(printf '%s' "${PLATFORMS}" | tr ',' ' '); do
+            os=${platform%/*}
+            arch=${platform#*/}
+            child=$(printf '%s' "${raw}" | jq -r --arg os "${os}" --arg arch "${arch}" \
+              '[.manifests[] | select(.platform.os == $os and .platform.architecture == $arch)][0].digest // empty')
+            if [ -z "${child}" ]; then
+              echo "::error::${repo}:${IMAGE_TAG} has no ${platform} manifest"
+              exit 1
+            fi
+            echo "${os}_${arch}=${child}" >> "${GITHUB_OUTPUT}"
+            echo "${platform} digest: ${child}"
+          done
+
+      # Signing an image nobody ever executed only proves it was built. Run the
+      # emulated result of every platform before the signature goes on it.
+      - name: Smoke test every published platform
+        if: inputs.smoke-test
+        env:
+          PLATFORMS: ${{ inputs.platforms }}
+          IMAGE_REPO: ${{ steps.digests.outputs.repo }}
+          INDEX_DIGEST: ${{ steps.digests.outputs.index }}
+          SMOKE_ENTRYPOINT: ${{ inputs.smoke-test-entrypoint }}
+          SMOKE_ARGS: ${{ inputs.smoke-test-args }}
+        run: |
+          set -eu
+          for platform in $(printf '%s' "${PLATFORMS}" | tr ',' ' '); do
+            arch=${platform#*/}
+            set -- run --rm --platform "${platform}"
+            if [ -n "${SMOKE_ENTRYPOINT}" ]; then
+              # An image with its own ENTRYPOINT would otherwise swallow the
+              # probe as an argument instead of executing it.
+              set -- "$@" --entrypoint "${SMOKE_ENTRYPOINT}"
+            fi
+            # SMOKE_ARGS is deliberately unquoted: it is an argument list.
+            # shellcheck disable=SC2086
+            output=$(docker "$@" "${IMAGE_REPO}@${INDEX_DIGEST}" ${SMOKE_ARGS})
+            echo "${platform}: ${output}"
+
+            # Only the default 'uname -m' probe has a known-good answer to
+            # assert on. Anything custom is reported, not judged.
+            if [ "${SMOKE_ENTRYPOINT}" = 'uname' ] && [ "${SMOKE_ARGS}" = '-m' ]; then
+              case "${arch}" in
+                amd64) expected='x86_64' ;;
+                arm64) expected='aarch64' ;;
+                *) expected='' ;;
+              esac
+              if [ -n "${expected}" ] && [ "${output}" != "${expected}" ]; then
+                echo "::error::${platform} manifest reports '${output}', expected '${expected}'"
+                exit 1
+              fi
+            fi
+          done
+
+      - name: Install cosign
+        if: inputs.sign
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6  # v4.1.2
+
+      # A signature is stored next to the image in the registry it was made
+      # against, so one call does not cover a copy living elsewhere even though
+      # both copies share the index digest. Sign once per registry; each call
+      # writes its own transparency-log entry.
+      - name: Sign the image index
+        if: inputs.sign
+        env:
+          IMAGE_NAME: ${{ steps.meta.outputs.image_name }}
+          NAMESPACE: ${{ steps.build.outputs.namespace }}
+          TARGETS: ${{ steps.registries.outputs.targets }}
+          PRIMARY: ${{ steps.registries.outputs.primary }}
+          INDEX_DIGEST: ${{ steps.digests.outputs.index }}
+        run: |
+          set -eu
+          for registry in ${TARGETS}; do
+            ref="${registry}/${NAMESPACE}/${IMAGE_NAME}@${INDEX_DIGEST}"
+            if cosign sign --yes "${ref}"; then
+              echo "signed ${ref}"
+            elif [ "${registry}" = "${PRIMARY}" ]; then
+              echo "::error::could not sign ${ref}"
+              exit 1
+            else
+              echo "::warning::could not sign ${ref}, continuing"
+            fi
+          done
+
+      # Trivy resolves a multi-arch tag to the runner's own platform, so a
+      # single scan would leave linux/arm64 unscanned. Scan each child manifest
+      # by digest instead, and give each one its own SARIF category so the two
+      # results do not overwrite each other in code scanning.
+      - name: Scan linux/amd64
+        if: contains(inputs.platforms, 'linux/amd64')
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
         with:
-          sarif_file: 'results/'
+          image-ref: ${{ steps.digests.outputs.repo }}@${{ steps.digests.outputs.linux_amd64 }}
+          severity: ${{ inputs.trivy-severity }}
+          limit-severities-for-sarif: true
+          # 939 of the 1185 open alerts were OS CVEs with no upstream fix
+          # available. Nothing here can act on those; a CVE reappears the
+          # moment a fix lands.
+          ignore-unfixed: ${{ inputs.trivy-ignore-unfixed }}
+          exit-code: '0'
+          format: sarif
+          output: ${{ matrix.directory }}/trivy-linux-amd64.sarif
+
+      - name: Scan linux/arm64
+        if: contains(inputs.platforms, 'linux/arm64')
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
+        with:
+          image-ref: ${{ steps.digests.outputs.repo }}@${{ steps.digests.outputs.linux_arm64 }}
+          severity: ${{ inputs.trivy-severity }}
+          limit-severities-for-sarif: true
+          # 939 of the 1185 open alerts were OS CVEs with no upstream fix
+          # available. Nothing here can act on those; a CVE reappears the
+          # moment a fix lands.
+          ignore-unfixed: ${{ inputs.trivy-ignore-unfixed }}
+          exit-code: '0'
+          format: sarif
+          output: ${{ matrix.directory }}/trivy-linux-arm64.sarif
+
+      - name: Upload Trivy results for linux/amd64
+        if: contains(inputs.platforms, 'linux/amd64')
+        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd  # v4.37.7
+        with:
+          sarif_file: ${{ matrix.directory }}/trivy-linux-amd64.sarif
+          category: ${{ matrix.directory }}:linux/amd64
+
+      - name: Upload Trivy results for linux/arm64
+        if: contains(inputs.platforms, 'linux/arm64')
+        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd  # v4.37.7
+        with:
+          sarif_file: ${{ matrix.directory }}/trivy-linux-arm64.sarif
+          category: ${{ matrix.directory }}:linux/arm64

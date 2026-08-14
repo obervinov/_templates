@@ -3,6 +3,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.0.0 - 2026-08-14
+### What's Changed
+#### 💥 Breaking Changes
+* Rewrite `images.yaml` as a full supply-chain pipeline. It is now three jobs (`prepare-images-matrix`, `verify-images-template`, `publish-images-template`) instead of one, takes 19 inputs, one optional secret and returns three outputs. Callers must grant `contents: read`, `packages: write`, `id-token: write` and `security-events: write` — a reusable workflow can never hold more than the caller gives it.
+* `images.yaml` no longer publishes from every branch. Only the default branch and a manual `workflow_dispatch` publish; everything else is a build-only check.
+#### 🚀 Features
+* Sign the published image index with keyless [cosign](https://github.com/sigstore/cosign) and attach an SBOM plus a max-mode provenance attestation, both addressed by digest rather than by a movable tag.
+* Push one build to several registries. Every target is a `-t` name on a single `docker buildx build --push`, so arm64 emulation runs once regardless of the number of registries. The first registry is primary and fails the run; the rest are advisory and are dropped with a warning when credentials are missing or the host is unreachable.
+* Replace the hardcoded matrix with a `prepare-images-matrix` job that emits JSON consumed through `fromJSON`, so an unchanged image never starts a runner. Previously twelve runners started, each cloning the repository and installing QEMU, and eleven of them then did nothing.
+* Change detection survives force-pushes: when `github.event.before` is unreachable the fork point from the default branch is used instead, and when no comparison point can be established at all the build runs rather than risking a skipped change.
+* Restore the arm64 smoke test dropped from the per-image pipeline. Every built platform is executed before the signature goes on it, and the default `uname -m` probe is asserted against the expected architecture — signing an image nobody ever ran only proves it was built.
+* Scan both child manifests by digest into separate SARIF categories. Trivy resolves a multi-arch tag to the runner's own platform, so a single scan left `linux/arm64` unscanned.
+* Expose `runs-on` as an input so the same workflow can target self-hosted runners.
+* Add `image`, `exclude`, `build-all`, `platforms`, `namespace`, `latest-tag`, `smoke-test*` and `trivy-*` inputs, and attach OCI source/revision/version labels to every published image.
+#### 🔒 Security
+* Pin every third-party action in `images.yaml` to an immutable commit SHA with the version in a trailing comment: `actions/checkout` `v6.1.0`, `docker/setup-qemu-action` `v4.2.0`, `docker/setup-buildx-action` `v4.2.0`, `sigstore/cosign-installer` `v4.1.2`, `aquasecurity/trivy-action` `v0.36.0`, `github/codeql-action/upload-sarif` `v4.37.7`. A workflow whose purpose is provenance cannot depend on mutable tags.
+* Cut the permission set to the minimum. `contents: write`, `actions: write` and `checks: read` were granted and never used.
+* No `run:` block interpolates a `${{ }}` expression any more — every value arrives through `env:`, which closes the script-injection path and makes the shell independently checkable.
+#### 🐛 Bug Fixes
+* Drop the `apt-key add` Trivy install from `images.yaml`. `apt-key` has been deprecated since Debian 11, and `trivy-action` was already in use elsewhere in the repository.
+* Replace the unquoted `find . -name Dockerfile` loop and the `awk -F '/' '{print $3}'` path-depth assumption with a quoted directory walk that works at any depth and with any repository layout.
+* Collapse ten repetitions of `if: steps.check_changes.outputs.build_needed == 'true' && env.PUBLISH == 'true'` into job-level conditions with `needs`. A new step that copied only half of that condition would silently have run on pull requests.
+
 ## v2.2.3 - 2026-07-31
 ### What's Changed
 #### 🐛 Bug Fixes
