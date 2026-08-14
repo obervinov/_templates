@@ -135,9 +135,9 @@ jobs:
     permissions:
       contents: read
     outputs:
-      images: ${{ steps.select.outputs.images }}
-      count: ${{ steps.select.outputs.count }}
-      publish: ${{ steps.select.outputs.publish }}
+      images: ${{ steps.matrix.outputs.images }}
+      count: ${{ steps.matrix.outputs.count }}
+      publish: ${{ steps.publish.outputs.publish }}
 
     steps:
       - name: Checkout code
@@ -145,22 +145,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Select images to build
-        id: select
+      - name: Resolve the comparison base
+        id: base
         env:
-          IMAGES_PATH: ${{ inputs.images-path }}
-          DOCKERFILE: ${{ inputs.dockerfile }}
           ONLY_IMAGE: ${{ inputs.image }}
-          EXCLUDE: ${{ inputs.exclude }}
           BUILD_ALL: ${{ inputs.build-all }}
-          PUBLISH_INPUT: ${{ inputs.publish }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           EVENT_BEFORE: ${{ github.event.before }}
         run: |
           set -eu
-
-          # Accept commas or whitespace as separators in the opt-out list.
-          excluded=$(printf '%s' "${EXCLUDE}" | tr ',' ' ')
 
           # github.event.before is all-zeros on the first push of a branch and
           # points at a discarded commit after a force-push. `git diff` then
@@ -177,6 +170,23 @@ jobs:
               echo "github.event.before (${EVENT_BEFORE}) is unreachable, comparing against ${base:-nothing} instead."
             fi
           fi
+
+          echo "base=${base}" >> "${GITHUB_OUTPUT}"
+
+      - name: Select image directories
+        id: select
+        env:
+          IMAGES_PATH: ${{ inputs.images-path }}
+          DOCKERFILE: ${{ inputs.dockerfile }}
+          ONLY_IMAGE: ${{ inputs.image }}
+          EXCLUDE: ${{ inputs.exclude }}
+          BUILD_ALL: ${{ inputs.build-all }}
+          BASE: ${{ steps.base.outputs.base }}
+        run: |
+          set -eu
+
+          # Accept commas or whitespace as separators in the opt-out list.
+          excluded=$(printf '%s' "${EXCLUDE}" | tr ',' ' ')
 
           selected="${RUNNER_TEMP}/selected-images.txt"
           : > "${selected}"
@@ -209,29 +219,54 @@ jobs:
             if [ "${BUILD_ALL}" = 'true' ]; then
               echo "${dir}: build-all requested."
               echo "${dir}" >> "${selected}"
-            elif [ -z "${base}" ] || [ "${base}" = "${GITHUB_SHA}" ]; then
+            elif [ -z "${BASE}" ] || [ "${BASE}" = "${GITHUB_SHA}" ]; then
               # No usable comparison point. Build rather than risk skipping a
               # change: a needless build costs runner minutes, a skipped one
               # ships a stale image.
               echo "${dir}: cannot determine what changed, building."
               echo "${dir}" >> "${selected}"
-            elif git diff --quiet "${base}" "${GITHUB_SHA}" -- "${dir}"; then
-              echo "${dir}: unchanged since ${base}, skipping."
+            elif git diff --quiet "${BASE}" "${GITHUB_SHA}" -- "${dir}"; then
+              echo "${dir}: unchanged since ${BASE}, skipping."
             else
               # The whole directory is the build context, so anything in it —
               # not only the Dockerfile — can change the resulting image.
-              echo "${dir}: changed since ${base}, building."
+              echo "${dir}: changed since ${BASE}, building."
               echo "${dir}" >> "${selected}"
             fi
           done
 
-          images=$(jq -R -s -c 'split("\n") | map(select(length > 0))' < "${selected}")
+          echo "file=${selected}" >> "${GITHUB_OUTPUT}"
+
+      - name: Emit the build matrix
+        id: matrix
+        env:
+          SELECTED: ${{ steps.select.outputs.file }}
+          ONLY_IMAGE: ${{ inputs.image }}
+          IMAGES_PATH: ${{ inputs.images-path }}
+        run: |
+          set -eu
+
+          images=$(jq -R -s -c 'split("\n") | map(select(length > 0))' < "${SELECTED}")
           count=$(printf '%s' "${images}" | jq 'length')
 
           if [ -n "${ONLY_IMAGE}" ] && [ "${count}" = '0' ]; then
             echo "::error::no image directory matching '${ONLY_IMAGE}' under ${IMAGES_PATH}"
             exit 1
           fi
+
+          echo "selected ${count} image(s): ${images}"
+          {
+            echo "images=${images}"
+            echo "count=${count}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Decide whether this run publishes
+        id: publish
+        env:
+          PUBLISH_INPUT: ${{ inputs.publish }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -eu
 
           # The default branch publishes. A manual dispatch publishes too,
           # since re-publishing one image is the only reason to trigger it by
@@ -242,14 +277,8 @@ jobs:
             publish='true'
           fi
 
-          echo "selected ${count} image(s): ${images}"
           echo "publishing: ${publish}"
-
-          {
-            echo "images=${images}"
-            echo "count=${count}"
-            echo "publish=${publish}"
-          } >> "${GITHUB_OUTPUT}"
+          echo "publish=${publish}" >> "${GITHUB_OUTPUT}"
 
   # Build-only check for everything that does not publish. The publish-gated
   # work lives in its own job below rather than behind a step-level condition
