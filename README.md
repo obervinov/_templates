@@ -55,7 +55,7 @@ on:
   workflow_dispatch:
     inputs:
       image:
-        description: "Build a single directory, e.g. docker/pdf-thumb. Empty = all changed."
+        description: "Build a single directory, e.g. docker/debug. Empty = all changed."
         required: false
 
 jobs:
