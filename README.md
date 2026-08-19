@@ -102,6 +102,8 @@ Nothing is required: called with no `with:` block at all, it builds every change
 | `trivy-ignore-unfixed` | boolean | `true` | Report only vulnerabilities that have an upstream fix. |
 | `code-scanning` | boolean | `true` | Upload Trivy results to GitHub code scanning. A private repository without Advanced Security cannot accept them — set this to `false` and findings are printed in the job log instead. |
 
+Each image's `org.opencontainers.image.description` LABEL is lifted out of its Dockerfile and re-attached as an annotation on the published index, together with `title`, `source`, `version` and `revision`. A registry reads a multi-platform image's description from the index annotations, not from the layer config a LABEL produces — without this a package page shows *No description provided* however well the Dockerfile is labelled. An image with no description LABEL builds normally and logs a warning.
+
 ### Secrets
 | Name | Required | Description |
 | ---- | -------- | ----------- |

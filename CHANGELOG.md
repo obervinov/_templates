@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.2.0 - 2026-08-19
+### What's Changed
+#### 🚀 Features
+* `images.yaml`: annotate the published index with `org.opencontainers.image.description`, `title`, `source`, `version` and `revision`. A registry reads a multi-platform image's description from the index annotations; a `LABEL` only reaches the layer config, which the package page of such an image never looks at — so every image showed *No description provided* despite all of them carrying a description LABEL. The description is lifted out of the Dockerfile at build time, so it stays declared in one place, and both `LABEL key "value"` and `LABEL key="value"` are recognised. An image without the LABEL builds as before and logs a warning.
+
 ## v3.1.0 - 2026-08-19
 ### What's Changed
 #### 🚀 Features

@@ -328,9 +328,20 @@ jobs:
             echo "::error file=${IMAGE_DIR}/${DOCKERFILE}::no 'ARG ${VERSION_ARG}=<version>' line found, refusing to build an untagged image"
             exit 1
           fi
+          # GitHub shows a package description only when it is an annotation on
+          # the index. A LABEL reaches the layer config, which a multi-platform
+          # package page never reads — so the description is lifted out of the
+          # Dockerfile here and re-attached as an annotation at build time.
+          # Both LABEL forms occur in practice: `key "value"` and `key="value"`.
+          description=$(sed -n 's/^[[:space:]]*LABEL[[:space:]][[:space:]]*org\.opencontainers\.image\.description[[:space:]]*=\{0,1\}[[:space:]]*"\(.*\)"[[:space:]]*$/\1/p' "${IMAGE_DIR}/${DOCKERFILE}" | head -n 1)
+          if [ -z "${description}" ]; then
+            echo "::warning file=${IMAGE_DIR}/${DOCKERFILE}::no org.opencontainers.image.description LABEL; the package page will show none"
+          fi
+
           {
             echo "image_name=${image_name}"
             echo "image_tag=${image_tag}"
+            echo "description=${description}"
           } >> "${GITHUB_OUTPUT}"
 
       # A multi-platform result cannot be --load-ed into the local docker
@@ -395,9 +406,20 @@ jobs:
             echo "::error file=${IMAGE_DIR}/${DOCKERFILE}::no 'ARG ${VERSION_ARG}=<version>' line found, refusing to build an untagged image"
             exit 1
           fi
+          # GitHub shows a package description only when it is an annotation on
+          # the index. A LABEL reaches the layer config, which a multi-platform
+          # package page never reads — so the description is lifted out of the
+          # Dockerfile here and re-attached as an annotation at build time.
+          # Both LABEL forms occur in practice: `key "value"` and `key="value"`.
+          description=$(sed -n 's/^[[:space:]]*LABEL[[:space:]][[:space:]]*org\.opencontainers\.image\.description[[:space:]]*=\{0,1\}[[:space:]]*"\(.*\)"[[:space:]]*$/\1/p' "${IMAGE_DIR}/${DOCKERFILE}" | head -n 1)
+          if [ -z "${description}" ]; then
+            echo "::warning file=${IMAGE_DIR}/${DOCKERFILE}::no org.opencontainers.image.description LABEL; the package page will show none"
+          fi
+
           {
             echo "image_name=${image_name}"
             echo "image_tag=${image_tag}"
+            echo "description=${description}"
           } >> "${GITHUB_OUTPUT}"
 
       # The first registry in the list is the primary one: it fails the run.
@@ -502,6 +524,7 @@ jobs:
           TARGETS: ${{ steps.registries.outputs.targets }}
           ATTESTATIONS: ${{ inputs.attestations }}
           SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}
+          DESCRIPTION: ${{ steps.meta.outputs.description }}
         run: |
           set -eu
           namespace="${NAMESPACE:-${GITHUB_REPOSITORY}}"
@@ -517,6 +540,18 @@ jobs:
           for registry in ${TARGETS}; do
             set -- "$@" -t "${registry}/${namespace}/${IMAGE_NAME}:${IMAGE_TAG}"
           done
+
+          # Labels land in the layer config, which a multi-platform package page
+          # does not read. The same metadata is annotated onto the index so a
+          # registry has something to show for the image as a whole.
+          set -- "$@" \
+            --annotation "index:org.opencontainers.image.source=${SOURCE_URL}" \
+            --annotation "index:org.opencontainers.image.revision=${GITHUB_SHA}" \
+            --annotation "index:org.opencontainers.image.version=${IMAGE_TAG}" \
+            --annotation "index:org.opencontainers.image.title=${IMAGE_NAME}"
+          if [ -n "${DESCRIPTION}" ]; then
+            set -- "$@" --annotation "index:org.opencontainers.image.description=${DESCRIPTION}"
+          fi
 
           docker buildx build \
             --platform "${PLATFORMS}" \
