@@ -563,6 +563,7 @@ jobs:
             echo "repo=${repo}"
           } >> "${GITHUB_OUTPUT}"
 
+          children=''
           for platform in $(printf '%s' "${PLATFORMS}" | tr ',' ' '); do
             os=${platform%/*}
             arch=${platform#*/}
@@ -574,7 +575,13 @@ jobs:
             fi
             echo "${os}_${arch}=${child}" >> "${GITHUB_OUTPUT}"
             echo "${platform} digest: ${child}"
+            children="${children}${platform}=${child} "
           done
+
+          # A single output carrying every platform, because a step cannot
+          # build an output name like `linux_amd64` dynamically when reading
+          # it back through the ${{ }} context.
+          echo "children=${children}" >> "${GITHUB_OUTPUT}"
 
       # Signing an image nobody ever executed only proves it was built. Run the
       # emulated result of every platform before the signature goes on it.
@@ -583,13 +590,29 @@ jobs:
         env:
           PLATFORMS: ${{ inputs.platforms }}
           IMAGE_REPO: ${{ steps.digests.outputs.repo }}
-          INDEX_DIGEST: ${{ steps.digests.outputs.index }}
+          CHILDREN: ${{ steps.digests.outputs.children }}
           SMOKE_ENTRYPOINT: ${{ inputs.smoke-test-entrypoint }}
           SMOKE_ARGS: ${{ inputs.smoke-test-args }}
         run: |
           set -eu
           for platform in $(printf '%s' "${PLATFORMS}" | tr ',' ' '); do
             arch=${platform#*/}
+
+            # Run the platform's own manifest, not the index. `docker run`
+            # refuses an index referenced by digest — the resolved
+            # single-platform image has a different digest than the reference
+            # and it will not overwrite it.
+            child=''
+            for pair in ${CHILDREN}; do
+              case "${pair}" in
+                "${platform}="*) child=${pair#*=} ;;
+              esac
+            done
+            if [ -z "${child}" ]; then
+              echo "::error::no child digest resolved for ${platform}"
+              exit 1
+            fi
+
             set -- run --rm --platform "${platform}"
             if [ -n "${SMOKE_ENTRYPOINT}" ]; then
               # An image with its own ENTRYPOINT would otherwise swallow the
@@ -598,7 +621,7 @@ jobs:
             fi
             # SMOKE_ARGS is deliberately unquoted: it is an argument list.
             # shellcheck disable=SC2086
-            output=$(docker "$@" "${IMAGE_REPO}@${INDEX_DIGEST}" ${SMOKE_ARGS})
+            output=$(docker "$@" "${IMAGE_REPO}@${child}" ${SMOKE_ARGS})
             echo "${platform}: ${output}"
 
             # Only the default 'uname -m' probe has a known-good answer to
