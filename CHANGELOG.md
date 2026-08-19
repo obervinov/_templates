@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.0.1 - 2026-08-19
+### What's Changed
+#### 🐛 Bug Fixes
+* `images.yaml`: the smoke test ran `docker run --platform` against the **index** digest, and Docker refuses that — the single-platform image it resolves to carries a different digest than the reference, so it fails with `cannot overwrite digest` and takes the build down *after* the image has already been pushed, unsigned and unscanned. It now runs each platform's own child manifest, which the digest step already resolves; those digests are carried across as one `platform=digest` output because a step cannot build an output name like `linux_amd64` dynamically when reading it back. A platform with no resolved child now fails with a message instead of falling through to the index.
+
 ## v3.0.0 - 2026-08-14
 ### What's Changed
 #### 💥 Breaking Changes
