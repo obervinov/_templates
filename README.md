@@ -100,6 +100,7 @@ Nothing is required: called with no `with:` block at all, it builds every change
 | `smoke-test-args` | string | `-m` | Arguments for the smoke test entrypoint. |
 | `trivy-severity` | string | `HIGH,CRITICAL` | Severities Trivy reports. |
 | `trivy-ignore-unfixed` | boolean | `true` | Report only vulnerabilities that have an upstream fix. |
+| `code-scanning` | boolean | `true` | Upload Trivy results to GitHub code scanning. A private repository without Advanced Security cannot accept them — set this to `false` and findings are printed in the job log instead. |
 
 ### Secrets
 | Name | Required | Description |

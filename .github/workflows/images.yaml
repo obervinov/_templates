@@ -108,6 +108,15 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
         default: true
+      code-scanning:
+        description: >-
+          Upload Trivy results to GitHub code scanning. Requires the feature to
+          be available on the repository — a private repository without Advanced
+          Security cannot accept them. When false, findings are printed in the
+          job log instead.
+        required: false
+        type: boolean
+        default: true
     secrets:
       registry-credentials:
         description: >-
@@ -689,8 +698,8 @@ jobs:
           # moment a fix lands.
           ignore-unfixed: ${{ inputs.trivy-ignore-unfixed }}
           exit-code: '0'
-          format: sarif
-          output: ${{ matrix.directory }}/trivy-linux-amd64.sarif
+          format: ${{ inputs.code-scanning && 'sarif' || 'table' }}
+          output: ${{ matrix.directory }}/trivy-linux-amd64.${{ inputs.code-scanning && 'sarif' || 'txt' }}
 
       - name: Scan linux/arm64
         if: contains(inputs.platforms, 'linux/arm64')
@@ -704,19 +713,36 @@ jobs:
           # moment a fix lands.
           ignore-unfixed: ${{ inputs.trivy-ignore-unfixed }}
           exit-code: '0'
-          format: sarif
-          output: ${{ matrix.directory }}/trivy-linux-arm64.sarif
+          format: ${{ inputs.code-scanning && 'sarif' || 'table' }}
+          output: ${{ matrix.directory }}/trivy-linux-arm64.${{ inputs.code-scanning && 'sarif' || 'txt' }}
 
       - name: Upload Trivy results for linux/amd64
-        if: contains(inputs.platforms, 'linux/amd64')
+        if: inputs.code-scanning && contains(inputs.platforms, 'linux/amd64')
         uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd  # v4.37.7
         with:
           sarif_file: ${{ matrix.directory }}/trivy-linux-amd64.sarif
           category: ${{ matrix.directory }}:linux/amd64
 
       - name: Upload Trivy results for linux/arm64
-        if: contains(inputs.platforms, 'linux/arm64')
+        if: inputs.code-scanning && contains(inputs.platforms, 'linux/arm64')
         uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd  # v4.37.7
         with:
           sarif_file: ${{ matrix.directory }}/trivy-linux-arm64.sarif
           category: ${{ matrix.directory }}:linux/arm64
+
+      # Without code scanning there is no dashboard to send findings to, so
+      # they are printed here instead. The scan does not gate the build either
+      # way: exit-code is 0, and a base-image CVE is not a reason to withhold
+      # an image that is otherwise ready.
+      - name: Report Trivy findings
+        if: ${{ !inputs.code-scanning }}
+        env:
+          DIRECTORY: ${{ matrix.directory }}
+        run: |
+          set -eu
+          for report in "${DIRECTORY}"/trivy-linux-*.txt; do
+            [ -f "${report}" ] || continue
+            echo "::group::${report}"
+            cat "${report}"
+            echo "::endgroup::"
+          done
