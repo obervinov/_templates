@@ -353,6 +353,10 @@ jobs:
       # token.actions.githubusercontent.com — there is no key to store or rotate.
       id-token: write
       security-events: write
+      # upload-sarif reads the workflow run it is uploading for. On a private
+      # repository that read is not implied by security-events, and the upload
+      # fails with "Resource not accessible by integration".
+      actions: read
     strategy:
       fail-fast: false
       matrix:
