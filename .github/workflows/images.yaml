@@ -580,7 +580,7 @@ jobs:
 
           # A single output carrying every platform, because a step cannot
           # build an output name like `linux_amd64` dynamically when reading
-          # it back through the ${{ }} context.
+          # it back through the workflow expression context.
           echo "children=${children}" >> "${GITHUB_OUTPUT}"
 
       # Signing an image nobody ever executed only proves it was built. Run the

@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.0.2 - 2026-08-19
+### What's Changed
+#### 🐛 Bug Fixes
+* `images.yaml`: a shell comment added in v3.0.1 contained an empty `${{ }}`, and GitHub interpolates expressions everywhere in a workflow file — inside `run:` bodies and comments included. An empty expression does not parse, so the whole file became unloadable: pushing it produced a run with zero jobs, and every repository calling the workflow failed to load with "This run likely failed because of a workflow file issue". The comment now describes the expression context without writing one. Valid YAML the whole time, which is why a YAML parser passed it — `actionlint` reports it as `unexpected end of input while parsing variable access` and is the check that catches this class.
+
 ## v3.0.1 - 2026-08-19
 ### What's Changed
 #### 🐛 Bug Fixes
