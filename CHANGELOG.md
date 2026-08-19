@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.1.0 - 2026-08-19
+### What's Changed
+#### 🚀 Features
+* `images.yaml`: add `code-scanning` (default `true`). Uploading SARIF needs code scanning to be available on the repository, and a private repository on a personal account cannot have it — enabling it answers `Advanced security has not been purchased`, so the upload failed at the last step of an otherwise complete run. With the input set to `false` the upload is skipped, Trivy switches from SARIF to table output, and a new step prints the findings in the job log. The scan gates the build in neither mode: `exit-code` stays `0`, because a base-image CVE is not a reason to withhold an image that is otherwise ready.
+
 ## v3.0.3 - 2026-08-19
 ### What's Changed
 #### 🐛 Bug Fixes
