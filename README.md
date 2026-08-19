@@ -66,6 +66,7 @@ jobs:
       packages: write
       id-token: write
       security-events: write
+      actions: read
     uses: obervinov/_templates/.github/workflows/images.yaml@v3.0.0
     with:
       images-path: docker

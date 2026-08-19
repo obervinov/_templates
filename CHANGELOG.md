@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.0.3 - 2026-08-19
+### What's Changed
+#### 🐛 Bug Fixes
+* `images.yaml`: grant `actions: read` to the publishing job. `upload-sarif` reads the workflow run it is uploading results for, and on a **private** repository that read is not implied by `security-events: write` — the step fails with `Resource not accessible by integration` after the image has already been built, scanned and signed. The permission set was trimmed in v3.0.0 on the reasoning that `actions` was unused, which held while the source repository was public and stopped holding when it went private. Callers must add `actions: read` to their own `permissions` block as well, since a called workflow cannot exceed what the caller grants.
+
 ## v3.0.2 - 2026-08-19
 ### What's Changed
 #### 🐛 Bug Fixes
