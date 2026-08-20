@@ -108,6 +108,15 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
         default: true
+      skip-marker:
+        description: >-
+          A file that marks an image directory as not to be built. The directory
+          is skipped unless it was asked for by name through `image`, so a
+          retired image carries its own reason next to it instead of being
+          listed in a caller's exclude string. Empty disables the mechanism.
+        required: false
+        type: string
+        default: ".no-build"
       code-scanning:
         description: >-
           Upload Trivy results to GitHub code scanning. Requires the feature to
@@ -190,6 +199,7 @@ jobs:
           ONLY_IMAGE: ${{ inputs.image }}
           EXCLUDE: ${{ inputs.exclude }}
           BUILD_ALL: ${{ inputs.build-all }}
+          SKIP_MARKER: ${{ inputs.skip-marker }}
           BASE: ${{ steps.base.outputs.base }}
         run: |
           set -eu
@@ -218,10 +228,18 @@ jobs:
             fi
 
             if [ -n "${ONLY_IMAGE}" ]; then
+              # An explicit request wins over a skip marker: naming a directory
+              # is a deliberate act, and a marker is only meant to keep it out
+              # of automatic selection.
               if [ "${ONLY_IMAGE}" = "${name}" ] || [ "${ONLY_IMAGE}" = "${dir}" ]; then
                 echo "${dir}: requested explicitly."
                 echo "${dir}" >> "${selected}"
               fi
+              continue
+            fi
+
+            if [ -n "${SKIP_MARKER}" ] && [ -f "${dir}/${SKIP_MARKER}" ]; then
+              echo "${dir}: ${SKIP_MARKER} present, skipping."
               continue
             fi
 
@@ -441,6 +459,14 @@ jobs:
           creds="${RUNNER_TEMP}/registry-credentials"
           umask 077
           printf '%s\n' "${REGISTRY_CREDENTIALS}" > "${creds}"
+
+          if [ -z "$(printf '%s' "${REGISTRIES}" | tr -d ' ,\n')" ]; then
+            # Without this the loop below simply never runs, no target is
+            # recorded, and the build fails much later inside buildx with a
+            # complaint about a missing tag.
+            echo "::error::no registries configured"
+            exit 1
+          fi
 
           targets="${RUNNER_TEMP}/registry-targets.txt"
           : > "${targets}"
