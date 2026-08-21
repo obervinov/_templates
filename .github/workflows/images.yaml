@@ -127,6 +127,16 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
         default: ""
+      buildkit-append:
+        description: >-
+          Further BuildKit instances to join to the builder, as the YAML list
+          `docker/setup-buildx-action` takes — an `endpoint` and the
+          `platforms` it serves, per entry. With one builder per architecture
+          each platform is built natively, and nothing has to emulate anything.
+          Ignored unless `buildkit-endpoint` is set.
+        required: false
+        type: string
+        default: ""
       code-scanning:
         description: >-
           Upload Trivy results to GitHub code scanning. Requires the feature to
@@ -349,6 +359,7 @@ jobs:
         with:
           driver: ${{ inputs.buildkit-endpoint != '' && 'remote' || 'docker-container' }}
           endpoint: ${{ inputs.buildkit-endpoint }}
+          append: ${{ inputs.buildkit-endpoint != '' && inputs.buildkit-append || '' }}
 
       - name: Resolve image name and tag
         id: meta
@@ -435,6 +446,7 @@ jobs:
         with:
           driver: ${{ inputs.buildkit-endpoint != '' && 'remote' || 'docker-container' }}
           endpoint: ${{ inputs.buildkit-endpoint }}
+          append: ${{ inputs.buildkit-endpoint != '' && inputs.buildkit-append || '' }}
 
       - name: Resolve image name and tag
         id: meta
