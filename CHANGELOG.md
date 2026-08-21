@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.3.0 - 2026-08-20
+### What's Changed
+#### 🚀 Features
+* `images.yaml`: add `skip-marker` (default `.no-build`). A directory holding that file is left out of automatic selection, so an image that is retired or published elsewhere carries the reason in a file next to it rather than as one more name in a caller's `exclude` string — a list that grows, is edited far from the thing it describes, and does not disappear when the directory does. Asking for a directory by name through `image` still builds it: a marker governs automatic selection, an explicit request is deliberate. `exclude` keeps working and is unchanged.
+#### 🐛 Bug Fixes
+* `images.yaml`: fail with `no registries configured` when `registries` resolves to nothing. Previously the login loop simply never ran, no target was recorded, and the build died much later inside buildx complaining about a missing tag — an unhelpful error a long way from its cause. This is reachable in practice: pointing `registries` at a repository variable that has not been set yet produces exactly that.
+
 ## v3.2.0 - 2026-08-19
 ### What's Changed
 #### 🚀 Features
