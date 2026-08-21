@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.5.0 - 2026-08-21
+### What's Changed
+#### 🚀 Features
+* `images.yaml`: add `buildkit-append`, passing further BuildKit instances through to the builder. With one instance per architecture each platform is built on hardware that already speaks it, which removes the reason to emulate — and emulation is what needs binfmt handlers, which are kernel-wide state only a privileged container can register. A cluster that owns a node of each architecture can therefore build multi-platform images with no privileged container anywhere. Ignored unless `buildkit-endpoint` is set, so nothing changes for callers that do not use it.
+
 ## v3.4.0 - 2026-08-21
 ### What's Changed
 #### 🚀 Features
