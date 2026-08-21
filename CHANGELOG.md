@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.4.0 - 2026-08-21
+### What's Changed
+#### 🚀 Features
+* `images.yaml`: add `buildkit-endpoint`. Pointed at a BuildKit instance, the job drives that instead of starting a builder on the runner — which is what lets a runner with no Docker daemon build images at all, and is the difference between needing a privileged container and not. QEMU setup is skipped, because emulation belongs wherever the build runs and registering binfmt handlers on a daemonless runner is a privileged no-op. The smoke test is skipped too, with a warning rather than in silence: running an image needs a local daemon, and a signature on an image nobody executed is worth less — that belongs in the log instead of being inferred from an absence. Unset, every path behaves exactly as before.
+
 ## v3.3.0 - 2026-08-20
 ### What's Changed
 #### 🚀 Features
