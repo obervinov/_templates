@@ -117,6 +117,16 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
         default: ".no-build"
+      buildkit-endpoint:
+        description: >-
+          Address of a BuildKit instance to build on, e.g.
+          `tcp://buildkitd.ci-cd.svc.cluster.local:1234`. Set it and the job
+          drives that instance instead of starting a builder locally, which is
+          what lets a runner with no Docker daemon build images. QEMU becomes
+          the remote instance's concern. Empty builds locally, as before.
+        required: false
+        type: string
+        default: ""
       code-scanning:
         description: >-
           Upload Trivy results to GitHub code scanning. Requires the feature to
@@ -327,10 +337,18 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
 
       - name: Set up QEMU (for Docker buildx)
+        # Emulation belongs wherever the build actually runs. With a remote
+        # BuildKit that is the remote instance, and registering binfmt handlers
+        # here would be both useless and a privileged operation on a runner
+        # that has no daemon to use them.
+        if: inputs.buildkit-endpoint == ''
         uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8  # v4.2.0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c  # v4.2.0
+        with:
+          driver: ${{ inputs.buildkit-endpoint != '' && 'remote' || 'docker-container' }}
+          endpoint: ${{ inputs.buildkit-endpoint }}
 
       - name: Resolve image name and tag
         id: meta
@@ -405,10 +423,18 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
 
       - name: Set up QEMU (for Docker buildx)
+        # Emulation belongs wherever the build actually runs. With a remote
+        # BuildKit that is the remote instance, and registering binfmt handlers
+        # here would be both useless and a privileged operation on a runner
+        # that has no daemon to use them.
+        if: inputs.buildkit-endpoint == ''
         uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8  # v4.2.0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c  # v4.2.0
+        with:
+          driver: ${{ inputs.buildkit-endpoint != '' && 'remote' || 'docker-container' }}
+          endpoint: ${{ inputs.buildkit-endpoint }}
 
       - name: Resolve image name and tag
         id: meta
@@ -659,8 +685,18 @@ jobs:
 
       # Signing an image nobody ever executed only proves it was built. Run the
       # emulated result of every platform before the signature goes on it.
+      # Executing the image needs a local daemon, which a runner driving a
+      # remote BuildKit does not have. Skipping is the only option, and saying
+      # so is the point: a signature on an image nobody ran is worth less, and
+      # that belongs in the log rather than being inferred from an absence.
+      - name: Note the skipped smoke test
+        if: inputs.smoke-test && inputs.buildkit-endpoint != ''
+        run: |
+          set -eu
+          echo "::warning::smoke test skipped: it runs the image, and a remote BuildKit build has no local daemon to run it with"
+
       - name: Smoke test every published platform
-        if: inputs.smoke-test
+        if: inputs.smoke-test && inputs.buildkit-endpoint == ''
         env:
           PLATFORMS: ${{ inputs.platforms }}
           IMAGE_REPO: ${{ steps.digests.outputs.repo }}
