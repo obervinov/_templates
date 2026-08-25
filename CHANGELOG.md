@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.6.0 - 2026-08-25
+### What's Changed
+#### 🐛 Bug Fixes
+* `images.yaml`: stop the `registry-credentials` secret from erasing credentials the runner already provided. The login step assigned the secret straight to `REGISTRY_CREDENTIALS`, so a caller that passed none set that variable to an empty string — overwriting whatever the environment held, which is exactly the case where a self-hosted runner had exported it. The input now lands in `REGISTRY_CREDENTIALS_INPUT` and wins when set; otherwise the environment is used. Callers that pass the secret see no change, and a cluster that keeps its secrets in Vault can now configure nothing on the GitHub side at all.
+
 ## v3.5.0 - 2026-08-21
 ### What's Changed
 #### 🚀 Features

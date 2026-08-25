@@ -152,6 +152,10 @@ on:  # yamllint disable-line rule:truthy
           Credentials for the registries, one line per host: "<host> <username> <password>".
           ghcr.io needs no entry, the job's own GITHUB_TOKEN is used for it.
           A host with no line and no fallback is skipped with a warning unless it is the primary.
+
+          May be left unset when the runner already exports REGISTRY_CREDENTIALS
+          into the job environment — a self-hosted setup that keeps its secrets
+          in the cluster rather than in GitHub. This input wins when both exist.
         required: false
     outputs:
       images:
@@ -485,7 +489,9 @@ jobs:
         id: registries
         env:
           REGISTRIES: ${{ inputs.registries }}
-          REGISTRY_CREDENTIALS: ${{ secrets.registry-credentials }}
+          # Not named REGISTRY_CREDENTIALS: an unset secret would assign an
+          # empty string over whatever the runner exported.
+          REGISTRY_CREDENTIALS_INPUT: ${{ secrets.registry-credentials }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -eu
@@ -496,7 +502,8 @@ jobs:
           # list configurable while keeping the credentials themselves apart.
           creds="${RUNNER_TEMP}/registry-credentials"
           umask 077
-          printf '%s\n' "${REGISTRY_CREDENTIALS}" > "${creds}"
+          # The input wins; otherwise take whatever the runner exported.
+          printf '%s\n' "${REGISTRY_CREDENTIALS_INPUT:-${REGISTRY_CREDENTIALS:-}}" > "${creds}"
 
           if [ -z "$(printf '%s' "${REGISTRIES}" | tr -d ' ,\n')" ]; then
             # Without this the loop below simply never runs, no target is
