@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.7.0 - 2026-09-03
+### What's Changed
+#### 🚀 Features
+* `golang-binaries.yaml`: new template attaching statically linked binaries plus a `SHA256SUMS` file to the release that `release.yaml` created. `docker.yaml` covers projects shipped as an image; this covers projects installed as a binary on a host, where the consumer downloads the artifact and needs a checksum to verify it against. Follows the existing convention of taking no inputs: the version comes from `CHANGELOG.md` and every main package under `./cmd/*` is built for `linux/amd64` and `linux/arm64`, named after its directory. Builds on any branch, uploads only on the default branch.
+
 ## v3.6.0 - 2026-08-25
 ### What's Changed
 #### 🐛 Bug Fixes
