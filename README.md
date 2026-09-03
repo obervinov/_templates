@@ -9,43 +9,126 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/obervinov/_templates?style=for-the-badge)
 
 ## <img src="https://github.com/obervinov/_templates/blob/main/icons/book.png" width="25" title="about"> About this project
-This repository contains templates for creating standard repositories
-- **Workflow templates for GitHub Actions**
-  - docker
-  - images (multi-image build, sign, attest and scan)
-  - python
-  - go
-  - terraform
-  - release
-  - pull-request
-  - yaml
-  - helm
-- **Icons for documentation other repositories**
+Reusable GitHub Actions workflows shared across my repositories, plus the icons used in
+their documentation.
 
-## <img src="https://github.com/obervinov/_templates/blob/v1.0.5/icons/github-actions.png" width="25" title="github-actions"> GitHub Actions
-| Name  | Version |
-| ------------------------ | ----------- |
-| GitHub Actions Templates | [main](https://github.com/obervinov/_templates/tree/main) |
+Every workflow here is `workflow_call` only — it is called by a repository, never run on
+its own. The two prefixed with an underscore are the exception: they are this
+repository's own CI, not templates.
 
+## <img src="https://github.com/obervinov/_templates/blob/v1.0.5/icons/github-actions.png" width="25" title="github-actions"> The workflows
+
+### Language and ecosystem checks
+| Workflow | Purpose | Inputs |
+| -------- | ------- | ------ |
+| [`golang.yaml`](.github/workflows/golang.yaml) | `gofmt`, `go vet`, `golangci-lint`, `go test -race -cover`, `go build`. Takes the toolchain from `go.mod` | none |
+| [`golang-binaries.yaml`](.github/workflows/golang-binaries.yaml) | Cross-compiles every main package under `./cmd/*` for `linux/amd64` and `linux/arm64` and attaches them with a `SHA256SUMS` file to the release | none |
+| [`nodejs.yaml`](.github/workflows/nodejs.yaml) | `node --check` over every JS file, then the built-in test runner. For repositories that carry JavaScript without being JavaScript projects | none |
+| [`pyproject.yaml`](.github/workflows/pyproject.yaml) | Python lint, test and version checks | none |
+| [`yamllint.yaml`](.github/workflows/yamllint.yaml) | Lints YAML, including the workflows themselves | none |
+| [`terraform.yaml`](.github/workflows/terraform.yaml) | `terraform fmt` and generated docs | yes |
+
+### Building and publishing
+| Workflow | Purpose | Inputs |
+| -------- | ------- | ------ |
+| [`images.yaml`](.github/workflows/images.yaml) | Build, sign, attest and scan every image in a one-directory-per-image repository. Documented in full [below](#-imagesyaml) | yes |
+| [`docker.yaml`](.github/workflows/docker.yaml) | Build and scan a single image from the repository root | none |
+| [`helm-charts.yaml`](.github/workflows/helm-charts.yaml) | Lint, package and publish helm charts | none |
+
+### Release automation
+| Workflow | Purpose | Inputs |
+| -------- | ------- | ------ |
+| [`pr.yaml`](.github/workflows/pr.yaml) | Opens or updates the pull request from `CHANGELOG.md`, and fails when the version or date at the top of it was not bumped | none |
+| [`release.yaml`](.github/workflows/release.yaml) | Creates the release and tag from the top `CHANGELOG.md` entry, using that section as the release body | none |
+
+`CHANGELOG.md` is the source of truth for both: the version and date at the top of the
+file decide the tag, the release body and the pull request body. The date is compared
+against the runner's clock, which is **UTC**.
+
+### This repository's own CI
 | Workflow | Purpose |
 | -------- | ------- |
-| [`images.yaml`](.github/workflows/images.yaml) | Build, sign, attest and scan every image in a one-directory-per-image repository |
-| [`docker.yaml`](.github/workflows/docker.yaml) | Build and scan a single image from the repository root |
-| [`helm-charts.yaml`](.github/workflows/helm-charts.yaml) | Lint, package and publish helm charts |
-| [`pyproject.yaml`](.github/workflows/pyproject.yaml) | Python lint, test and version checks |
-| [`golang.yaml`](.github/workflows/golang.yaml) | Go fmt, vet, lint, test and build |
-| [`terraform.yaml`](.github/workflows/terraform.yaml) | Terraform fmt and docs |
-| [`pr.yaml`](.github/workflows/pr.yaml) / [`release.yaml`](.github/workflows/release.yaml) | Changelog-driven pull request and release automation |
-| [`yamllint.yaml`](.github/workflows/yamllint.yaml) | Lint the workflows themselves |
+| [`_pr.yaml`](.github/workflows/_pr.yaml) | Runs on a push to a branch here |
+| [`_release.yaml`](.github/workflows/_release.yaml) | Runs on a push to `main` here |
+
+### Consumer-specific
+| Workflow | Purpose |
+| -------- | ------- |
+| [`instagrapi.yaml`](.github/workflows/instagrapi.yaml) | Checks that the pinned `instagrapi` version still resolves. Only `pyinstabot-downloader` calls it |
+
+## <img src="https://github.com/obervinov/_templates/blob/main/icons/github-actions.png" width="25" title="usage"> Calling a workflow
+Most of these take no inputs at all — a caller only needs to name them. A Go project
+using every relevant one:
+
+```yaml
+---
+name: PR
+
+on:
+  push:
+    branches: ['*', '*/*', '**', '!main']
+
+# A reusable workflow can never hold more than the caller grants it.
+permissions:
+  contents: write
+  pull-requests: write
+  security-events: write
+  actions: write
+  checks: read
+
+jobs:
+  pr:
+    uses: obervinov/_templates/.github/workflows/pr.yaml@v3.9.0
+
+  golang:
+    uses: obervinov/_templates/.github/workflows/golang.yaml@v3.9.0
+
+  nodejs:
+    uses: obervinov/_templates/.github/workflows/nodejs.yaml@v3.9.0
+```
+
+and its release side:
+
+```yaml
+---
+name: Release
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+  checks: read
+
+jobs:
+  create-release:
+    if: github.event.pull_request.merged == true
+    uses: obervinov/_templates/.github/workflows/release.yaml@v3.9.0
+
+  attach-binaries:
+    if: github.event.pull_request.merged == true
+    uses: obervinov/_templates/.github/workflows/golang-binaries.yaml@v3.9.0
+    needs: [create-release]
+```
+
+Always pin a tag rather than `main`: these are shared, and a change here reaches every
+consumer at once.
 
 ## <img src="https://github.com/obervinov/_templates/blob/main/icons/docker.png" width="25" title="images"> images.yaml
+The only workflow here with a surface worth documenting at length; everything below
+this heading is about `images.yaml` alone.
+
 A supply-chain pipeline for repositories that keep one image per directory (`docker/<name>/Dockerfile`).
 
 One run: pick only the images whose directory actually changed, build every platform once, push the same index to one or more registries, execute the emulated result, sign the index with keyless [cosign](https://github.com/sigstore/cosign), attach an SBOM and a max-mode provenance attestation, and scan **both** child manifests by digest into per-arch code-scanning categories.
 
 Every third-party action is pinned to an immutable commit SHA — a workflow whose purpose is provenance cannot itself depend on a mutable tag.
 
-### Usage
+### images.yaml — usage
 ```yaml
 ---
 name: Build images
@@ -78,7 +161,7 @@ jobs:
 
 Nothing is required: called with no `with:` block at all, it builds every changed directory under `docker/` for `linux/amd64,linux/arm64` and publishes to `ghcr.io` using the job's own `GITHUB_TOKEN`.
 
-### Inputs
+### images.yaml — inputs
 | Name | Type | Default | Description |
 | ---- | ---- | ------- | ----------- |
 | `runs-on` | string | `ubuntu-latest` | Runner label the jobs execute on. A self-hosted label works here too. |
@@ -107,14 +190,14 @@ Nothing is required: called with no `with:` block at all, it builds every change
 
 Each image's `org.opencontainers.image.description` LABEL is lifted out of its Dockerfile and re-attached as an annotation on the published index, together with `title`, `source`, `version` and `revision`. A registry reads a multi-platform image's description from the index annotations, not from the layer config a LABEL produces — without this a package page shows *No description provided* however well the Dockerfile is labelled. An image with no description LABEL builds normally and logs a warning.
 
-### Secrets
+### images.yaml — secrets
 | Name | Required | Description |
 | ---- | -------- | ----------- |
 | `registry-credentials` | no | Credentials for the registries, one line per host: `<host> <username> <password>`. `ghcr.io` needs no entry — the job's own `GITHUB_TOKEN` is used. A host with no line is skipped with a warning unless it is the primary one, which fails the run. |
 
 GitHub Actions secret names are static, so a separate secret pair per registry cannot be declared for an arbitrary number of targets. One secret holding a line per host is what keeps the registry list configurable.
 
-### Outputs
+### images.yaml — outputs
 | Name | Description |
 | ---- | ----------- |
 | `images` | JSON array of the image directories this run selected. |
@@ -123,7 +206,7 @@ GitHub Actions secret names are static, so a separate secret pair per registry c
 
 Per-image digests are deliberately not exposed: the publishing job is a matrix, and matrix legs share one output namespace, so the last leg to finish would overwrite the others.
 
-### Permissions
+### images.yaml — permissions
 The caller must grant the job at least the set below; a reusable workflow can never hold more than the caller gives it.
 
 | Permission | Why |
