@@ -4,7 +4,11 @@ name: Create GitHub release
 on:  # yamllint disable-line rule:truthy
   push:
     branches: [main]
-    paths: ['.github/workflows/**']
+    # CHANGELOG.md decides the version, so a change to it is precisely the signal
+    # that a release is due. Narrowing this to the workflows contradicted pr.yaml,
+    # which fails a pull request whose CHANGELOG version was not bumped: a docs-only
+    # change was forced to declare a version that then never became a tag.
+    paths: ['.github/workflows/**', 'CHANGELOG.md', 'README.md']
 
 jobs:
   release:
