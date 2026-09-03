@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # go.mod rather than 'stable': golangci-lint type-checks with the toolchain it was
       # built against, so a runner that installs a newer Go than the linter knows makes
