@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 
 ## v3.9.1 - 2026-09-03
 ### What's Changed
+#### 🐛 Bug Fixes
+* `_release.yaml`: release on a change to `CHANGELOG.md` or `README.md`, not only to `.github/workflows/**`. The narrow path filter contradicted `pr.yaml`, which fails a pull request whose CHANGELOG version was not bumped — so a documentation change was forced to declare a version that then never became a tag, and every later version drifted one ahead of the releases.
+
 #### 📚 Documentation
 * `README.md`: cover every workflow instead of two thirds of the file documenting only `images.yaml`. The "About this project" list had drifted from the directory — `nodejs.yaml` and `golang-binaries.yaml` were missing and several entries named a language rather than a file — and the generic `### Usage` / `### Inputs` / `### Secrets` headings read as if the repository held one workflow. The tables now group the twelve by what they are for, mark which take inputs, separate the two underscore-prefixed workflows that are this repository's own CI from the templates, and say outright that `CHANGELOG.md` drives the release automation and that its date is compared in UTC. The `images.yaml` deep-dive is unchanged but scoped under its own name.
 
