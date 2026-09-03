@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.9.1 - 2026-09-03
+### What's Changed
+#### 📚 Documentation
+* `README.md`: cover every workflow instead of two thirds of the file documenting only `images.yaml`. The "About this project" list had drifted from the directory — `nodejs.yaml` and `golang-binaries.yaml` were missing and several entries named a language rather than a file — and the generic `### Usage` / `### Inputs` / `### Secrets` headings read as if the repository held one workflow. The tables now group the twelve by what they are for, mark which take inputs, separate the two underscore-prefixed workflows that are this repository's own CI from the templates, and say outright that `CHANGELOG.md` drives the release automation and that its date is compared in UTC. The `images.yaml` deep-dive is unchanged but scoped under its own name.
+
 ## v3.9.0 - 2026-09-03
 ### What's Changed
 #### 🚀 Features
