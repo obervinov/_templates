@@ -1,0 +1,72 @@
+---
+name: Build golang binaries template
+
+on: [workflow_call]  # yamllint disable-line rule:truthy
+
+# Attaches statically linked binaries to the release that release.yaml created.
+# docker.yaml covers projects shipped as an image; this one covers projects installed
+# as a binary on a host, where the consumer needs a downloadable artifact and a
+# checksum to verify it against.
+#
+# No inputs by convention: the version comes from CHANGELOG.md and every main package
+# under ./cmd/* is built, named after its directory.
+jobs:
+  build-golang-binaries-template:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Determine version from CHANGELOG.md
+        run: |
+          # Same expression as release.yaml and docker.yaml, so the three agree on the tag
+          VERSION=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')
+          if [ -z "$VERSION" ]; then
+            echo "::error::No version found in CHANGELOG.md"
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Build
+        env:
+          CGO_ENABLED: '0'
+        run: |
+          set -eu
+          mkdir -p dist
+          found=0
+          for main_package in ./cmd/*/; do
+            [ -d "$main_package" ] || continue
+            name=$(basename "$main_package")
+            found=1
+            for target in linux/amd64 linux/arm64; do
+              os="${target%/*}"
+              arch="${target#*/}"
+              # -trimpath keeps build paths out of the binary, -s -w drops the symbol
+              # table: the artifact is downloaded onto hosts, not debugged there.
+              GOOS="$os" GOARCH="$arch" go build \
+                -trimpath \
+                -ldflags "-s -w -X main.version=${VERSION}" \
+                -o "dist/${name}_${VERSION}_${os}_${arch}" \
+                "$main_package"
+            done
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "::error::No main packages found under ./cmd/"
+            exit 1
+          fi
+          cd dist && sha256sum * > SHA256SUMS && cat SHA256SUMS
+
+      - name: Attach to release
+        if: github.ref_name == github.event.repository.default_branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${VERSION}" dist/* --clobber
