@@ -1,0 +1,43 @@
+---
+name: Node.js CI template
+
+on: [workflow_call]  # yamllint disable-line rule:truthy
+
+# For repositories that carry JavaScript without being JavaScript projects — a
+# Cloudflare Worker beside a Go binary, for instance. Runs the built-in test runner, so
+# it needs no package.json, no lockfile and no dependencies.
+jobs:
+  nodejs-ci-template:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+
+      - name: Check for tests
+        id: tests
+        run: |
+          # node --test with no matching files exits 1, which would report "no tests"
+          # as a failure. Decide explicitly instead.
+          if find . -path ./node_modules -prune -o -name '*.test.mjs' -print -o -name '*.test.js' -print | grep -q .; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::No *.test.mjs or *.test.js files found, nothing to run"
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Syntax check
+        run: |
+          set -eu
+          find . -path ./node_modules -prune -o -name '*.js' -print -o -name '*.mjs' -print \
+            | while read -r file; do
+                node --check "$file" || exit 1
+              done
+
+      - name: Testing with node --test
+        if: steps.tests.outputs.found == 'true'
+        run: node --test

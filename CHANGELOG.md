@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.9.0 - 2026-09-03
+### What's Changed
+#### 🚀 Features
+* `nodejs.yaml`: new template running `node --check` over every JavaScript file and then the built-in test runner. For repositories that carry JavaScript without being JavaScript projects — a Cloudflare Worker beside a Go binary, where `golang.yaml` never looks at the `.js` files at all. Needs no `package.json`, lockfile or dependencies. A repository with no test files gets a warning rather than a failure, since `node --test` exits non-zero when nothing matches.
+
 ## v3.8.0 - 2026-09-03
 ### What's Changed
 #### 🐛 Bug Fixes
