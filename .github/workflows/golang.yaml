@@ -10,10 +10,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      # go.mod rather than 'stable': golangci-lint type-checks with the toolchain it was
+      # built against, so a runner that installs a newer Go than the linter knows makes
+      # it panic on the standard library — "file requires newer Go version go1.27
+      # (application built with go1.26)". Following the module keeps CI on the version
+      # the project actually declares, which is also what a reproducible build wants.
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 'stable'
+          go-version-file: go.mod
           cache: true
 
       - name: Check formatting with gofmt

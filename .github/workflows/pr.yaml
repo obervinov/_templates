@@ -21,8 +21,13 @@ jobs:
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
         id: currentdate
 
+      # A repository whose first release is still open has no tags, and the action exits
+      # with "fatal: No names found, cannot describe anything". The comparison below
+      # then runs against an empty tag, which is correct: nothing has been released, so
+      # no CHANGELOG version can collide with it.
       - uses: actions-ecosystem/action-get-latest-tag@v1
         id: tag
+        continue-on-error: true
 
       - name: Old release version in changelog.md
         run: |

@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v3.8.0 - 2026-09-03
+### What's Changed
+#### 🐛 Bug Fixes
+* `golang.yaml`: take the Go version from `go.mod` instead of always installing `stable`. `golangci-lint` type-checks with the toolchain it was built against, so once the runners moved to Go 1.27 every Go project failed with `panic: file requires newer Go version go1.27 (application built with go1.26)` before a single linter ran. Following the module also keeps CI on the version the project declares, rather than silently moving under it.
+* `pr.yaml`: do not fail on a repository that has no tags yet. `action-get-latest-tag` exits with `fatal: No names found, cannot describe anything`, which made the template unusable for the first release of a new project. The step is now allowed to fail and the version comparison runs against an empty tag — correct, since nothing has been released for a CHANGELOG version to collide with.
+
 ## v3.7.0 - 2026-09-03
 ### What's Changed
 #### 🚀 Features
