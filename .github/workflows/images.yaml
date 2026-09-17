@@ -183,7 +183,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           fetch-depth: 0
 
@@ -348,7 +348,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up QEMU (for Docker buildx)
         # Emulation belongs wherever the build actually runs. With a remote
@@ -356,10 +356,10 @@ jobs:
         # here would be both useless and a privileged operation on a runner
         # that has no daemon to use them.
         if: inputs.buildkit-endpoint == ''
-        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8  # v4.2.0
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1  # v4.4.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c  # v4.2.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
         with:
           driver: ${{ inputs.buildkit-endpoint != '' && 'remote' || 'docker-container' }}
           endpoint: ${{ inputs.buildkit-endpoint }}
@@ -435,7 +435,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803  # v6.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
       - name: Set up QEMU (for Docker buildx)
         # Emulation belongs wherever the build actually runs. With a remote
@@ -443,10 +443,10 @@ jobs:
         # here would be both useless and a privileged operation on a runner
         # that has no daemon to use them.
         if: inputs.buildkit-endpoint == ''
-        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8  # v4.2.0
+        uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1  # v4.4.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c  # v4.2.0
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069  # v4.4.1
         with:
           driver: ${{ inputs.buildkit-endpoint != '' && 'remote' || 'docker-container' }}
           endpoint: ${{ inputs.buildkit-endpoint }}
@@ -834,14 +834,14 @@ jobs:
 
       - name: Upload Trivy results for linux/amd64
         if: inputs.code-scanning && contains(inputs.platforms, 'linux/amd64')
-        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd  # v4.37.7
+        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63  # v4.38.0
         with:
           sarif_file: ${{ matrix.directory }}/trivy-linux-amd64.sarif
           category: ${{ matrix.directory }}:linux/amd64
 
       - name: Upload Trivy results for linux/arm64
         if: inputs.code-scanning && contains(inputs.platforms, 'linux/arm64')
-        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd  # v4.37.7
+        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63  # v4.38.0
         with:
           sarif_file: ${{ matrix.directory }}/trivy-linux-arm64.sarif
           category: ${{ matrix.directory }}:linux/arm64

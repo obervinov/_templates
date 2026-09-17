@@ -15,7 +15,7 @@ jobs:
       security-events: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install helm and dependencies
         run: |
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-helm-charts
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -128,7 +128,7 @@ jobs:
           mv charts/index.yaml index.yaml
 
       - name: Commit & Push changes
-        uses: actions-js/push@master
+        uses: actions-js/push@v1.6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           message: "Build schemas, packages and index for helm repository by GitHub Actions: ${{ github.sha }}"

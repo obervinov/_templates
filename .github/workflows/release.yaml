@@ -6,8 +6,13 @@ on: [workflow_call]  # yamllint disable-line rule:truthy
 jobs:
   release-template:
     runs-on: ubuntu-latest
+    # actions/create-release supplied its own token from github.token and needed
+    # no declaration. action-gh-release calls the REST API as the job, so the
+    # job has to be allowed to write releases.
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Extract version in CHANGELOG.md
         run: echo "version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_OUTPUT
@@ -21,14 +26,16 @@ jobs:
         run: sed -n '/## ${{ steps.changelogmdversion.outputs.version }} /,/## v/p' CHANGELOG.md | sed '$ d' > RELEASE_BODY.tmp
         id: changes
 
+      # actions/create-release is archived and runs on node12, which the runner
+      # stops carrying on 2026-09-23. action-gh-release is the drop-in the
+      # upstream README points at: same inputs, `release_name` renamed `name`,
+      # and the token defaults to github.token.
       - name: Create release
-        uses: actions/create-release@v1.1.4
+        uses: softprops/action-gh-release@v3
         id: create_release
         with:
           draft: false
           prerelease: false
-          release_name: ${{ steps.project.outputs.project }}:${{ steps.changelogmdversion.outputs.version }}
+          name: ${{ steps.project.outputs.project }}:${{ steps.changelogmdversion.outputs.version }}
           tag_name: ${{ steps.changelogmdversion.outputs.version }}
           body_path: RELEASE_BODY.tmp
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
