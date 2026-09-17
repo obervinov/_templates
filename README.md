@@ -78,13 +78,13 @@ permissions:
 
 jobs:
   pr:
-    uses: obervinov/_templates/.github/workflows/pr.yaml@v3.9.0
+    uses: obervinov/_templates/.github/workflows/pr.yaml@v4.0.0
 
   golang:
-    uses: obervinov/_templates/.github/workflows/golang.yaml@v3.9.0
+    uses: obervinov/_templates/.github/workflows/golang.yaml@v4.0.0
 
   nodejs:
-    uses: obervinov/_templates/.github/workflows/nodejs.yaml@v3.9.0
+    uses: obervinov/_templates/.github/workflows/nodejs.yaml@v4.0.0
 ```
 
 and its release side:
@@ -107,11 +107,11 @@ permissions:
 jobs:
   create-release:
     if: github.event.pull_request.merged == true
-    uses: obervinov/_templates/.github/workflows/release.yaml@v3.9.0
+    uses: obervinov/_templates/.github/workflows/release.yaml@v4.0.0
 
   attach-binaries:
     if: github.event.pull_request.merged == true
-    uses: obervinov/_templates/.github/workflows/golang-binaries.yaml@v3.9.0
+    uses: obervinov/_templates/.github/workflows/golang-binaries.yaml@v4.0.0
     needs: [create-release]
 ```
 
@@ -150,7 +150,7 @@ jobs:
       id-token: write
       security-events: write
       actions: read
-    uses: obervinov/_templates/.github/workflows/images.yaml@v3.0.0
+    uses: obervinov/_templates/.github/workflows/images.yaml@v4.0.0
     with:
       images-path: docker
       image: ${{ inputs.image }}

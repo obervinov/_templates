@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # go.mod rather than 'stable': golangci-lint type-checks with the toolchain it was
       # built against, so a runner that installs a newer Go than the linter knows makes
@@ -16,7 +16,7 @@ jobs:
       # (application built with go1.26)". Following the module keeps CI on the version
       # the project actually declares, which is also what a reproducible build wants.
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
           cache: true
@@ -34,7 +34,7 @@ jobs:
         run: go vet ./...
 
       - name: Analysing the code with golangci-lint
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           version: v2.12.2
 

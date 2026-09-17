@@ -8,13 +8,13 @@ jobs:
   terraform-fmt-template:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.9.2
 
@@ -28,7 +28,7 @@ jobs:
           terraform fmt -recursive
 
       - name: Commit & Push changes
-        uses: actions-js/push@master
+        uses: actions-js/push@v1.6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           message: "Apply Terraform formatting changes by GitHub Actions: ${{ github.sha }}"
@@ -37,13 +37,13 @@ jobs:
   terraform-docs-template:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
           fetch-depth: 0
 
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: 1.9.2
 
@@ -70,7 +70,7 @@ jobs:
           fi
 
       - name: Commit & Push changes
-        uses: actions-js/push@master
+        uses: actions-js/push@v1.6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           message: "Apply Terraform formatting changes by GitHub Actions: ${{ github.sha }}"

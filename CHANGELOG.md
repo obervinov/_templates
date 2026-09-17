@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v4.0.0 - 2026-09-17
+### What's Changed
+#### 💥 Breaking Changes
+* `release.yaml`: `actions/create-release` replaced with `softprops/action-gh-release@v3`. The old action is archived (read-only), its last commit is from 2021-03-03, and it declares `runs.using: node12` — a runtime the runner drops entirely on 2026-09-23, after which every release in every consumer repository would fail. The inputs map one to one except `release_name`, which is now `name`; the token still defaults to `github.token`, but the REST call is made as the job, so the job now declares `permissions: contents: write`. A caller that overrides permissions at workflow level has to include that.
+
+#### 🐛 Bug Fixes
+* every template: actions bumped to the majors that run on Node 24. `actions/checkout` v4/v6/`@main` → v7, `actions/setup-python` v5/v6 → v7, `actions/setup-go` v5 → v7, `actions/setup-node` v6 → v7, `actions/upload-artifact` v4 → v7, `golangci/golangci-lint-action` v8 → v9, `docker/setup-qemu-action` v3 → v4, `docker/setup-buildx-action` v3 → v4, `hashicorp/setup-terraform` v3 → v4. Node 20 stops being the default runtime on 2026-06-16 and is removed from the runner on 2026-09-23; a `node20` action is force-run on Node 24 until then and simply will not start afterwards. All of these need Actions Runner v2.327.1 or newer — the self-hosted set runs v2.337.0.
+* `terraform.yaml`, `pyproject.yaml`, `helm-charts.yaml`: `actions-js/push` pinned to `v1.6` instead of tracking `@master`. The floating ref already resolved to a Node 24 build, so the runtime was never the problem — but a template consumed by fifteen repositories should not follow a branch that can change under them.
+* `images.yaml`: SHA pins refreshed to the current releases — `actions/checkout` v6.1.0 → v7.0.1, `docker/setup-qemu-action` v4.2.0 → v4.4.0, `docker/setup-buildx-action` v4.2.0 → v4.4.1, `github/codeql-action/upload-sarif` v4.37.7 → v4.38.0. `sigstore/cosign-installer` v4.1.2 and `aquasecurity/trivy-action` v0.36.0 were already current and are unchanged.
+
+#### 📚 Documentation
+* `README.md`: usage examples reference `@v4.0.0`.
+
 ## v3.9.1 - 2026-09-03
 ### What's Changed
 #### 🐛 Bug Fixes
