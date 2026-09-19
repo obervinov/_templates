@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v4.1.0 - 2026-09-19
+### What's Changed
+#### 🚀 Features
+* `release.yaml`: after the release is created, point the major tag (`v4` for `v4.0.4`) at it. A consumer can then pin `tag = "v4"` in its README install snippet, or `?ref=v2` in a terraform module source, and stop editing that line on every release — which is what made those lines go stale. The pointer is a lightweight tag moved with force, it never crosses a major, and the per-release tag stays immutable for anyone who wants an exact pin.
+
+
 ## v4.0.0 - 2026-09-17
 ### What's Changed
 #### 💥 Breaking Changes

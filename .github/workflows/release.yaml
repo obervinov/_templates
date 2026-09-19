@@ -39,3 +39,23 @@ jobs:
           name: ${{ steps.project.outputs.project }}:${{ steps.changelogmdversion.outputs.version }}
           tag_name: ${{ steps.changelogmdversion.outputs.version }}
           body_path: RELEASE_BODY.tmp
+
+      # A consumer's README pins the package version in its install snippet, and
+      # that line has to be edited by hand on every release — which is how it
+      # goes stale. A major tag that follows the newest release inside its major
+      # lets the snippet say `tag = "v4"` once and stop being maintained. Same
+      # contract as actions/checkout@v7: the pointer moves within the major,
+      # never across it, so a breaking release starts a new one and whoever
+      # pinned the old major stays where they are.
+      #
+      # Lightweight and forced on purpose: it is a pointer, not a release. The
+      # release tag created above stays immutable and is what a reproducible
+      # pin uses.
+      - name: Move the major tag
+        env:
+          VERSION: ${{ steps.changelogmdversion.outputs.version }}
+        run: |
+          major="${VERSION%%.*}"
+          echo "Pointing $major at $VERSION ($GITHUB_SHA)"
+          git tag -f "$major"
+          git push -f origin "refs/tags/$major"
