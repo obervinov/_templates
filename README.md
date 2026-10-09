@@ -16,7 +16,7 @@ Every workflow here is `workflow_call` only — it is called by a repository, ne
 its own. The two prefixed with an underscore are the exception: they are this
 repository's own CI, not templates.
 
-## <img src="https://github.com/obervinov/_templates/blob/v1.0.5/icons/github-actions.png" width="25" title="github-actions"> The workflows
+## <img src="https://github.com/obervinov/_templates/blob/main/icons/github-actions.png" width="25" title="github-actions"> The workflows
 
 ### Language and ecosystem checks
 | Workflow | Purpose | Inputs |
