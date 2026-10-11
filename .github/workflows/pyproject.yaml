@@ -68,17 +68,20 @@ jobs:
       - uses: actions-ecosystem/action-get-latest-tag@v1
         id: tag
 
+      # Dependabot cannot bump the package version, see pr.yaml: its updates release
+      # nothing and ship with the next release, so the "already tagged" checks are
+      # skipped for it. The pyproject/CHANGELOG agreement check still runs.
       - name: Incorrect package version in pyproject.toml
         run: |
             echo "::error The Git tag already matches the versions specified in pyproject.toml::Please check the version in those file and increase it according to your update."
             exit 1
-        if: ${{ steps.pyproject-version.outputs.version == steps.tag.outputs.tag }}
+        if: ${{ github.actor != 'dependabot[bot]' && steps.pyproject-version.outputs.version == steps.tag.outputs.tag }}
 
       - name: Incorrect package version in changelog.md
         run: |
             echo "::error The Git tag already matches the versions specified in changelog.md::Please check the version in those file and increase it according to your update."
             exit 1
-        if: ${{ steps.changelog-version.outputs.version == steps.tag.outputs.tag }}
+        if: ${{ github.actor != 'dependabot[bot]' && steps.changelog-version.outputs.version == steps.tag.outputs.tag }}
 
       - name: Incorrect package version between pyproject.toml and changelog.md
         run: |
