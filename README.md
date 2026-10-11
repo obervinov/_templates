@@ -38,8 +38,8 @@ repository's own CI, not templates.
 ### Release automation
 | Workflow | Purpose | Inputs |
 | -------- | ------- | ------ |
-| [`pr.yaml`](.github/workflows/pr.yaml) | Opens or updates the pull request from `CHANGELOG.md`, and fails when the version or date at the top of it was not bumped | none |
-| [`release.yaml`](.github/workflows/release.yaml) | Creates the release and tag from the top `CHANGELOG.md` entry, using that section as the release body | none |
+| [`pr.yaml`](.github/workflows/pr.yaml) | Opens or updates the pull request from `CHANGELOG.md`, and fails when the version or date at the top of it was not bumped. Pull requests from Dependabot skip both checks and keep their own body | none |
+| [`release.yaml`](.github/workflows/release.yaml) | Creates the release and tag from the top `CHANGELOG.md` entry, using that section as the release body. Releases nothing when that version is already tagged, and says so in the `released` output | none |
 
 `CHANGELOG.md` is the source of truth for both: the version and date at the top of the
 file decide the tag, the release body and the pull request body. The date is compared
@@ -78,13 +78,13 @@ permissions:
 
 jobs:
   pr:
-    uses: obervinov/_templates/.github/workflows/pr.yaml@v4.0.0
+    uses: obervinov/_templates/.github/workflows/pr.yaml@v4.2.0
 
   golang:
-    uses: obervinov/_templates/.github/workflows/golang.yaml@v4.0.0
+    uses: obervinov/_templates/.github/workflows/golang.yaml@v4.2.0
 
   nodejs:
-    uses: obervinov/_templates/.github/workflows/nodejs.yaml@v4.0.0
+    uses: obervinov/_templates/.github/workflows/nodejs.yaml@v4.2.0
 ```
 
 and its release side:
@@ -107,13 +107,22 @@ permissions:
 jobs:
   create-release:
     if: github.event.pull_request.merged == true
-    uses: obervinov/_templates/.github/workflows/release.yaml@v4.0.0
+    uses: obervinov/_templates/.github/workflows/release.yaml@v4.2.0
 
   attach-binaries:
-    if: github.event.pull_request.merged == true
-    uses: obervinov/_templates/.github/workflows/golang-binaries.yaml@v4.0.0
     needs: [create-release]
+    if: github.event.pull_request.merged == true && needs.create-release.outputs.released == 'true'
+    uses: obervinov/_templates/.github/workflows/golang-binaries.yaml@v4.2.0
 ```
+
+### Dependabot updates
+Dependabot cannot write a `CHANGELOG.md` entry, so `pr.yaml` does not ask it for one.
+Its update is merged without a release and ships with the next one: `release.yaml`
+sees that the version at the top of `CHANGELOG.md` is already tagged and creates
+nothing. Any job that builds or publishes after the release — images, binaries,
+packages — **must** be gated on `needs.create-release.outputs.released == 'true'`, as
+above. Without that gate it rebuilds and overwrites the artifacts of a version that
+is already out.
 
 Always pin a tag rather than `main`: these are shared, and a change here reaches every
 consumer at once.
@@ -150,7 +159,7 @@ jobs:
       id-token: write
       security-events: write
       actions: read
-    uses: obervinov/_templates/.github/workflows/images.yaml@v4.0.0
+    uses: obervinov/_templates/.github/workflows/images.yaml@v4.2.0
     with:
       images-path: docker
       image: ${{ inputs.image }}

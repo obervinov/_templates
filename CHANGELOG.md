@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v4.2.0 - 2026-10-11
+### What's Changed
+#### 🚀 Features
+* `pr.yaml`: Dependabot pull requests pass without a `CHANGELOG.md` bump. The version and date checks are skipped for `dependabot[bot]`, and so is rewriting the pull request body from `CHANGELOG.md`, which would have replaced Dependabot's release notes with the previous release's section. A commit pushed to its branch by anyone else is checked as before.
+* `pyproject.yaml`: the same for the two "already tagged" checks; the pyproject/CHANGELOG agreement check still runs.
+* `release.yaml`: releases nothing when the version at the top of `CHANGELOG.md` is already tagged, instead of letting `action-gh-release` rewrite that release and moving the major tag again. New outputs `released` (`true` / `false`) and `version`.
+
+#### ⚠️ Upgrade notes
+* A caller with a job after `release.yaml` that builds or publishes (`docker.yaml`, `golang-binaries.yaml`, a package upload) has to gate it on `needs.create-release.outputs.released == 'true'` when it moves to this version. Without the gate a Dependabot merge rebuilds and overwrites the image or binaries of the version that is already released. See **Dependabot updates** in the README.
+
+#### 📚 Documentation
+* `README.md`: usage examples reference `@v4.2.0`, the release example gates its build job, new **Dependabot updates** section.
+
 ## v4.1.0 - 2026-09-19
 ### What's Changed
 #### 🚀 Features

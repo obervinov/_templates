@@ -1,11 +1,22 @@
 ---
 name: Release template
 
-on: [workflow_call]  # yamllint disable-line rule:truthy
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    outputs:
+      released:
+        description: "'true' when this run created the release; 'false' when the CHANGELOG version is already tagged"
+        value: ${{ jobs.release-template.outputs.released }}
+      version:
+        description: "The version at the top of CHANGELOG.md"
+        value: ${{ jobs.release-template.outputs.version }}
 
 jobs:
   release-template:
     runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.existing.outputs.released }}
+      version: ${{ steps.changelogmdversion.outputs.version }}
     # actions/create-release supplied its own token from github.token and needed
     # no declaration. action-gh-release calls the REST API as the job, so the
     # job has to be allowed to write releases.
@@ -17,6 +28,24 @@ jobs:
       - name: Extract version in CHANGELOG.md
         run: echo "version=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')" >> $GITHUB_OUTPUT
         id: changelogmdversion
+
+      # A merge that did not bump CHANGELOG.md — a Dependabot update, which pr.yaml lets
+      # through without a version — must not release again under the version that is
+      # already out: action-gh-release would rewrite that release, and a build job
+      # after this one would overwrite the artifacts of a tag that people pinned. The
+      # change waits for the next release instead. A caller with such a job gates it
+      # on the `released` output.
+      - name: Skip when the version is already released
+        id: existing
+        env:
+          VERSION: ${{ steps.changelogmdversion.outputs.version }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null; then
+            echo "::notice::$VERSION is already released; nothing to release for this merge"
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "released=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Project name
         run: echo "project=$(echo ${GITHUB_REPOSITORY#obervinov/})" >> $GITHUB_OUTPUT
@@ -33,6 +62,7 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v3
         id: create_release
+        if: steps.existing.outputs.released == 'true'
         with:
           draft: false
           prerelease: false
@@ -52,6 +82,7 @@ jobs:
       # release tag created above stays immutable and is what a reproducible
       # pin uses.
       - name: Move the major tag
+        if: steps.existing.outputs.released == 'true'
         env:
           VERSION: ${{ steps.changelogmdversion.outputs.version }}
         run: |
