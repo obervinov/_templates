@@ -33,6 +33,7 @@ repository's own CI, not templates.
 | -------- | ------- | ------ |
 | [`images.yaml`](.github/workflows/images.yaml) | Build, sign, attest and scan every image in a one-directory-per-image repository. Documented in full [below](#-imagesyaml) | yes |
 | [`docker.yaml`](.github/workflows/docker.yaml) | Build and scan a single image from the repository root | none |
+| [`python-windows-exe.yaml`](.github/workflows/python-windows-exe.yaml) | Builds Windows executables with PyInstaller (every root `*.spec`, or `main.py` as one windowed exe) and attaches them with a `SHA256SUMS` file to the release | none |
 | [`helm-charts.yaml`](.github/workflows/helm-charts.yaml) | Lint, package and publish helm charts | none |
 
 ### Release automation
@@ -113,6 +114,15 @@ jobs:
     needs: [create-release]
     if: github.event.pull_request.merged == true && needs.create-release.outputs.released == 'true'
     uses: obervinov/_templates/.github/workflows/golang-binaries.yaml@v4.2.0
+```
+
+A Python desktop app shipped as a Windows exe swaps the last job for:
+
+```yaml
+  attach-exe:
+    needs: [create-release]
+    if: github.event.pull_request.merged == true && needs.create-release.outputs.released == 'true'
+    uses: obervinov/_templates/.github/workflows/python-windows-exe.yaml@v4.3.0
 ```
 
 ### Dependabot updates
