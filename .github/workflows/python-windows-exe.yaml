@@ -1,0 +1,106 @@
+---
+name: Build python windows executables template
+
+on: [workflow_call]  # yamllint disable-line rule:truthy
+
+# Attaches PyInstaller-built Windows executables to the release that release.yaml
+# created. golang-binaries.yaml covers Go tools installed on Linux hosts; this one
+# covers Python desktop apps that users download and double-click on Windows.
+#
+# No inputs by convention:
+#   - every *.spec file in the repository root is built as is, which is where an
+#     app sets its exe name, icon, console/windowed mode and bundled data;
+#   - without a spec, main.py is built as one windowed exe named after the repository;
+#   - requirements.txt is installed when present, .python-version picks the Python
+#     version (3.12 otherwise).
+# PyInstaller hooks resolve package data on their own (sv-ttk, for example), so a
+# plain requirements.txt is usually enough.
+#
+# The exe keeps a stable name without the version, so
+# releases/latest/download/<name>.exe stays a working link across releases.
+# SHA256SUMS lists every exe for users to verify the download against.
+jobs:
+  build-python-windows-exe-template:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Determine Python version
+        run: |
+          if [ -f .python-version ]; then
+            echo "PYTHON_VERSION=$(head -1 .python-version | tr -d '[:space:]')" >> "$GITHUB_ENV"
+          else
+            echo "PYTHON_VERSION=3.12" >> "$GITHUB_ENV"
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Determine version from CHANGELOG.md
+        run: |
+          # Same expression as release.yaml and golang-binaries.yaml, so they agree on the tag
+          VERSION=$(grep -E '## v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])' CHANGELOG.md | head -1 | grep -Eo 'v[0-9]?([0-9]).[0-9]?([0-9]).[0-9]?([0-9])')
+          if [ -z "$VERSION" ]; then
+            echo "::error::No version found in CHANGELOG.md"
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "pyinstaller>=6,<7"
+          if [ -f requirements.txt ]; then
+            python -m pip install -r requirements.txt
+          fi
+
+      - name: Build
+        run: |
+          set -eu
+          found=0
+          for spec in ./*.spec; do
+            [ -f "$spec" ] || continue
+            found=1
+            python -m PyInstaller --noconfirm --distpath dist "$spec"
+          done
+          if [ "$found" -eq 0 ]; then
+            if [ ! -f main.py ]; then
+              echo "::error::Neither a *.spec file nor main.py in the repository root"
+              exit 1
+            fi
+            python -m PyInstaller --noconfirm --onefile --windowed \
+              --name "${GITHUB_REPOSITORY#*/}" --distpath dist main.py
+          fi
+          ls dist/*.exe >/dev/null 2>&1 || { echo "::error::PyInstaller produced no .exe in dist/"; exit 1; }
+          cd dist && sha256sum -- *.exe > SHA256SUMS && cat SHA256SUMS
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-exe
+          path: |
+            dist/*.exe
+            dist/SHA256SUMS
+
+      # Attach only to a release that already exists for this version. On a branch it
+      # does not exist yet (pr.yaml requires a fresh CHANGELOG version), after
+      # release.yaml it does. This holds for any trigger, including the
+      # pull_request-closed event, where github.ref_name is "<number>/merge".
+      - name: Attach to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            gh release upload "$VERSION" dist/*.exe dist/SHA256SUMS --clobber
+          else
+            echo "No release $VERSION yet, artifacts are only kept on the run"
+          fi

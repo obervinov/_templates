@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v4.3.0 - 2026-10-14
+### What's Changed
+#### 🚀 Features
+* `python-windows-exe.yaml`: new template building Windows executables with PyInstaller on `windows-latest` and attaching them with a `SHA256SUMS` file to the release that `release.yaml` created. The Python counterpart of `golang-binaries.yaml`, for desktop apps users download and run on Windows. No inputs by convention: every `*.spec` in the repository root is built as is (exe name, icon, console or windowed mode live there); without a spec, `main.py` becomes one windowed exe named after the repository. `requirements.txt` is installed when present and `.python-version` picks the interpreter (3.12 otherwise). The exe name carries no version, so `releases/latest/download/<name>.exe` stays valid. Builds on any branch and keeps the result as a run artifact; uploads only when a release for the `CHANGELOG.md` version already exists, which works for every trigger including `pull_request: closed`, where `github.ref_name` is `<number>/merge` rather than the default branch.
+
+#### 📚 Documentation
+* `README.md`: `python-windows-exe.yaml` in the workflow table, and a release example for a Python desktop app.
+
+
 ## v4.2.0 - 2026-10-11
 ### What's Changed
 #### 🚀 Features
