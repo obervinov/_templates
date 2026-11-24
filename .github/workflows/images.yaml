@@ -98,6 +98,17 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
         default: '-m'
+      smoke-test-file:
+        description: >-
+          A file in an image directory that replaces the smoke test for that
+          image alone, for an image with no `uname` to run (distroless,
+          scratch). `key=value` lines: `entrypoint` (empty keeps the image's
+          own), `args`, `exit-code` (expected, default 0) and `expect` (a
+          substring the combined output must contain). Empty disables the
+          mechanism.
+        required: false
+        type: string
+        default: ".smoke-test"
       trivy-severity:
         description: "Severities Trivy reports."
         required: false
@@ -722,8 +733,37 @@ jobs:
           CHILDREN: ${{ steps.digests.outputs.children }}
           SMOKE_ENTRYPOINT: ${{ inputs.smoke-test-entrypoint }}
           SMOKE_ARGS: ${{ inputs.smoke-test-args }}
+          SMOKE_FILE: ${{ inputs.smoke-test-file }}
+          IMAGE_DIR: ${{ matrix.directory }}
         run: |
           set -eu
+
+          # An image without a shell cannot answer `uname -m`; its directory
+          # carries its own probe instead. Parsed, never sourced: the file
+          # describes a command, it does not get to run one on the runner.
+          expect_code=0
+          expect=''
+          custom=''
+          if [ -n "${SMOKE_FILE}" ] && [ -f "${IMAGE_DIR}/${SMOKE_FILE}" ]; then
+            custom='yes'
+            SMOKE_ENTRYPOINT=''
+            SMOKE_ARGS=''
+            while IFS= read -r line || [ -n "${line}" ]; do
+              case "${line}" in
+                ''|'#'*) ;;
+                entrypoint=*) SMOKE_ENTRYPOINT=${line#entrypoint=} ;;
+                args=*) SMOKE_ARGS=${line#args=} ;;
+                exit-code=*) expect_code=${line#exit-code=} ;;
+                expect=*) expect=${line#expect=} ;;
+                *)
+                  echo "::error file=${IMAGE_DIR}/${SMOKE_FILE}::unknown line '${line}'"
+                  exit 1
+                  ;;
+              esac
+            done < "${IMAGE_DIR}/${SMOKE_FILE}"
+            echo "${IMAGE_DIR}/${SMOKE_FILE}: entrypoint='${SMOKE_ENTRYPOINT}' args='${SMOKE_ARGS}' exit-code=${expect_code} expect='${expect}'"
+          fi
+
           for platform in $(printf '%s' "${PLATFORMS}" | tr ',' ' '); do
             arch=${platform#*/}
 
@@ -748,10 +788,35 @@ jobs:
               # probe as an argument instead of executing it.
               set -- "$@" --entrypoint "${SMOKE_ENTRYPOINT}"
             fi
+            # stderr kept apart: `docker run` writes pull progress there, and
+            # the default probe compares stdout exactly.
+            code=0
+            errlog="${RUNNER_TEMP}/smoke-stderr.txt"
             # SMOKE_ARGS is deliberately unquoted: it is an argument list.
             # shellcheck disable=SC2086
-            output=$(docker "$@" "${IMAGE_REPO}@${child}" ${SMOKE_ARGS})
-            echo "${platform}: ${output}"
+            output=$(docker "$@" "${IMAGE_REPO}@${child}" ${SMOKE_ARGS} 2> "${errlog}") || code=$?
+            echo "${platform}: exit ${code}: ${output}"
+            cat "${errlog}" >&2
+
+            if [ -n "${custom}" ]; then
+              output="${output} $(cat "${errlog}")"
+              if [ "${code}" != "${expect_code}" ]; then
+                echo "::error::${platform} exited ${code}, ${SMOKE_FILE} expects ${expect_code}"
+                exit 1
+              fi
+              case "${output}" in
+                *"${expect}"*) ;;
+                *)
+                  echo "::error::${platform} output lacks '${expect}' from ${SMOKE_FILE}"
+                  exit 1
+                  ;;
+              esac
+              continue
+            fi
+            if [ "${code}" != 0 ]; then
+              echo "::error::${platform} smoke test exited ${code}"
+              exit 1
+            fi
 
             # Only the default 'uname -m' probe has a known-good answer to
             # assert on. Anything custom is reported, not judged.

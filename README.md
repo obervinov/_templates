@@ -200,6 +200,7 @@ Nothing is required: called with no `with:` block at all, it builds every change
 | `smoke-test` | boolean | `true` | Execute the published image on every built platform before signing it. |
 | `smoke-test-entrypoint` | string | `uname` | Entrypoint override for the smoke test. Set empty to keep the image entrypoint. |
 | `smoke-test-args` | string | `-m` | Arguments for the smoke test entrypoint. |
+| `smoke-test-file` | string | `.smoke-test` | A file in an image directory that replaces the smoke test for that image alone, for an image with no `uname` to run (distroless, scratch). `key=value` lines: `entrypoint` (empty keeps the image's own), `args`, `exit-code` (expected, default `0`) and `expect` (a substring the combined output must contain). Empty disables it. |
 | `trivy-severity` | string | `HIGH,CRITICAL` | Severities Trivy reports. |
 | `trivy-ignore-unfixed` | boolean | `true` | Report only vulnerabilities that have an upstream fix. |
 | `code-scanning` | boolean | `true` | Upload Trivy results to GitHub code scanning. A private repository without Advanced Security cannot accept them — set this to `false` and findings are printed in the job log instead. |
