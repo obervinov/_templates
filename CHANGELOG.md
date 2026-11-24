@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## v4.4.0 - 2026-11-24
+### What's Changed
+#### 🚀 Features
+* `images.yaml`: an image directory can carry its own smoke test in a `.smoke-test` file (new input `smoke-test-file`, empty disables it). The default probe runs `uname -m`, which an image without a shell (distroless, scratch) cannot answer, so it failed before signing and left the pushed image unsigned. The file holds `key=value` lines: `entrypoint` (empty keeps the image's own), `args`, `exit-code` (expected, default 0) and `expect` (a substring the combined stdout and stderr must contain). It is parsed, never sourced. A non-zero exit of the default probe is now reported as an error line instead of a bare `set -e` stop; its stdout is still compared exactly, stderr is printed apart.
+
+#### 📚 Documentation
+* `README.md`: `smoke-test-file` in the `images.yaml` inputs table.
+
+
 ## v4.3.0 - 2026-10-14
 ### What's Changed
 #### 🚀 Features
